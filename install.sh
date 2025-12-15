@@ -50,7 +50,7 @@ if [ "$INSTALL_EXTENDED" = "y" ]; then
     case "${MACHINE}" in
         Linux)
             echo "Installing for Linux..."
-            HUGO_VERSION="0.139.4"
+            HUGO_VERSION="0.146.0"
             wget -q "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb"
             sudo dpkg -i "hugo_extended_${HUGO_VERSION}_linux-amd64.deb"
             rm "hugo_extended_${HUGO_VERSION}_linux-amd64.deb"
