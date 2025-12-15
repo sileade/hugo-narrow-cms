@@ -1,0 +1,40 @@
+[Unit]
+Description=Webhook Server for Hugo Narrow CMS
+Documentation=https://github.com/adnanh/webhook
+After=network.target
+
+[Service]
+Type=simple
+User=hugo
+Group=hugo
+WorkingDirectory=/home/hugo/webhooks
+
+# Start webhook server
+ExecStart=/usr/bin/webhook \
+    -hooks /home/hugo/webhooks/hooks.json \
+    -port 9000 \
+    -verbose \
+    -hotreload
+
+# Restart policy
+Restart=always
+RestartSec=10
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/hugo/webhooks /home/hugo/hugo-narrow-cms /home/hugo/backups
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=webhook
+
+[Install]
+WantedBy=multi-user.target
