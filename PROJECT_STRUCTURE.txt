@@ -1,0 +1,35 @@
+.
+├── DEPLOYMENT.md
+├── PROJECT_STRUCTURE.txt
+├── QUICK_START.md
+├── README.md
+├── archetypes
+│   └── default.md
+├── assets
+├── content
+│   ├── _index.fr.md
+│   ├── _index.ja.md
+│   ├── _index.md
+│   ├── _index.zh-cn.md
+│   ├── about.fr.md
+│   ├── about.ja.md
+│   ├── about.md
+│   ├── about.zh-cn.md
+│   ├── archives
+│   └── posts
+├── data
+│   └── settings.json
+├── hugo.toml
+├── hugo.yaml
+├── hugo_extended_0.139.4_linux-amd64.deb
+├── i18n
+├── install.sh
+├── layouts
+├── setup.sh
+├── static
+│   └── admin
+├── themes
+│   └── hugo-narrow
+└── vercel.json
+
+12 directories, 20 files
