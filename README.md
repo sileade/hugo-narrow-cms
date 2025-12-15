@@ -3,251 +3,298 @@
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sileade/hugo-narrow-cms)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Hugo Version](https://img.shields.io/badge/Hugo-0.146.0-blue.svg)](https://gohugo.io/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 
-A modern, beautiful Hugo static site with an integrated admin panel for easy content management. Built with the stunning [Hugo Narrow theme](https://hugo-narrow.vercel.app) and powered by Decap CMS.
+> Современный, красивый статический сайт на Hugo с интегрированной админ-панелью для удобного управления контентом. Развертывание за 30 секунд с Docker или один клик с Vercel.
 
 ![Hugo Narrow Theme](https://hugo-narrow.vercel.app/images/og-default.avif)
 
-## ✨ Features
+---
 
-### 🎨 Beautiful Design
-- **11 Color Themes** - Default, Claude, Bumblebee, Emerald, Nord, Sunset, Abyss, Dracula, Amethyst, Slate, Twitter
-- **Dark Mode** - Automatic and manual dark mode support
-- **Responsive** - Mobile-first design that looks great on all devices
-- **Modern UI** - Clean, minimal interface with smooth animations
+## 🌟 Особенности
 
-### 📝 Content Management
-- **Admin Panel** - Easy-to-use CMS interface at `/admin/`
-- **Visual Editor** - Write and preview content in real-time
-- **Media Management** - Upload and organize images
-- **Draft System** - Save drafts before publishing
-- **No Database** - All content stored as Markdown files in Git
+<table>
+<tr>
+<td width="50%">
 
-### 🚀 Performance & SEO
-- **Lightning Fast** - Static site generation for optimal speed
-- **SEO Optimized** - Built-in SEO best practices
-- **PWA Ready** - Progressive Web App support
-- **Image Optimization** - Automatic image processing
-- **Code Highlighting** - Syntax highlighting for code blocks
+### 🎨 Дизайн
+- **11 цветовых тем**
+- **Темная тема**
+- **Адаптивный дизайн**
+- **Современный UI**
+- **Плавные анимации**
 
-### 🌍 Multi-language Support
-- English
-- Chinese (Simplified)
-- Japanese
-- French
-- Easy to add more languages
+### 📝 Управление контентом
+- **Админ-панель** `/admin/`
+- **Визуальный редактор**
+- **Загрузка изображений**
+- **Система черновиков**
+- **Без базы данных**
 
-### 🔧 Developer Friendly
-- **Git-based Workflow** - Version control for all content
-- **CI/CD Ready** - Automatic deployment on push
-- **Docker Support** - One-command deployment
-- **Customizable** - Easy to extend and modify
-- **Well Documented** - Comprehensive guides and examples
+</td>
+<td width="50%">
 
-## 🚀 Quick Start
+### 🚀 Производительность
+- **Молниеносная скорость**
+- **SEO оптимизация**
+- **PWA поддержка**
+- **Оптимизация изображений**
+- **Подсветка кода**
 
-### Option 1: Docker (Fastest - 30 seconds) 🐳
+### 🐳 Docker
+- **Развертывание за 30 сек**
+- **Live reload**
+- **Production ready**
+- **Nginx + Gzip**
+- **Автоматическая сборка**
 
-**Prerequisites**: Docker installed ([Get Docker](https://docs.docker.com/get-docker/))
+</td>
+</tr>
+</table>
+
+---
+
+## 🚀 Быстрый старт
+
+### Вариант 1: Docker (Рекомендуется) 🐳
+
+**Самый быстрый способ - 30 секунд!**
 
 ```bash
-# Clone the repository
+# Клонировать репозиторий
 git clone https://github.com/sileade/hugo-narrow-cms.git
 cd hugo-narrow-cms
 
-# Start development server
+# Запустить development сервер
 ./docker-deploy.sh
-# Select option 1
+# Выберите опцию 1
 
-# Or use Make
+# Или используйте Make
 make dev
 ```
 
-**Access**:
-- Website: http://localhost:1313
-- Admin: http://localhost:1313/admin/
+**Доступ**:
+- 🌐 Сайт: http://localhost:1313
+- 📝 Админка: http://localhost:1313/admin/
 
-See [DOCKER.md](DOCKER.md) for detailed Docker documentation.
+**Преимущества Docker**:
+- ✅ Не нужно устанавливать Hugo
+- ✅ Работает на любой ОС
+- ✅ Изолированная среда
+- ✅ Одна команда для запуска
+- ✅ Production-ready сборка
 
-### Option 2: One-Click Deploy (Vercel)
+📖 **Подробнее**: [DOCKER.md](DOCKER.md)
 
-Click this button to deploy your own copy:
+---
+
+### Вариант 2: Vercel (Один клик) ☁️
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sileade/hugo-narrow-cms)
 
-### Option 3: Local Installation
+**Что происходит**:
+1. Vercel клонирует репозиторий
+2. Автоматически устанавливает Hugo 0.146.0
+3. Собирает и деплоит сайт
+4. Ваш сайт онлайн через 2 минуты!
+
+---
+
+### Вариант 3: Локальная установка 💻
 
 ```bash
-# 1. Clone the repository
+# 1. Клонировать
 git clone https://github.com/sileade/hugo-narrow-cms.git
 cd hugo-narrow-cms
 
-# 2. Install Hugo (if not already installed)
+# 2. Установить Hugo (если не установлен)
 ./install.sh
 
-# 3. Start development server
+# 3. Запустить
 hugo server -D
 
-# 4. Open browser
-# Site: http://localhost:1313
-# Admin: http://localhost:1313/admin/
+# 4. Открыть браузер
+# Сайт: http://localhost:1313
+# Админка: http://localhost:1313/admin/
 ```
 
-## 📖 Documentation
+---
 
-- **[Quick Start Guide](QUICK_START.md)** - Get started in 5 minutes
-- **[Docker Guide](DOCKER.md)** - Complete Docker deployment guide
-- **[Deployment Guide](DEPLOYMENT.md)** - Deploy to Vercel, Netlify, GitHub Pages
-- **[Project Structure](PROJECT_STRUCTURE.txt)** - Understanding the file structure
+## 🐳 Docker - Подробнее
 
-## 🐳 Docker Deployment
-
-### Quick Commands
+### Команды Make (Самый простой способ)
 
 ```bash
-# Development mode (with live reload)
-make dev
-
-# Production mode (optimized)
-make prod
-
-# Stop all containers
-make stop
-
-# View logs
-make logs
-
-# Clean up
-make clean
+make dev              # Запустить development
+make prod             # Запустить production
+make stop             # Остановить все
+make logs             # Просмотр логов
+make clean            # Удалить все
+make help             # Показать все команды
 ```
 
-### Docker Compose Profiles
+### Docker Compose
 
 ```bash
-# Development
+# Development (с live reload)
 docker-compose --profile dev up -d
 
-# Production
+# Production (с Nginx)
 docker-compose --profile prod up -d
 
-# Stop
+# Остановить
 docker-compose --profile dev --profile prod down
 ```
 
-### Features
+### Интерактивный скрипт
 
-**Development Mode**:
-- ✅ Live reload on file changes
-- ✅ Draft posts visible
-- ✅ Admin panel accessible
-- ✅ Hot module replacement
-
-**Production Mode**:
-- ✅ Optimized build (minified)
-- ✅ Nginx web server
-- ✅ Gzip compression
-- ✅ Static file caching
-- ✅ Security headers
-
-See [DOCKER.md](DOCKER.md) for complete documentation.
-
-## 🎯 What Can You Do?
-
-### Create Content
-- ✍️ Write blog posts with Markdown
-- 📝 Edit pages (About, Home, etc.)
-- 🖼️ Upload and manage images
-- 🏷️ Organize with categories and tags
-- 📅 Schedule posts for future publication
-
-### Customize
-- 🎨 Change color themes
-- 🌙 Configure dark mode
-- 🌐 Add/remove languages
-- 📱 Customize social links
-- ⚙️ Adjust site settings
-
-### Manage
-- 👀 Preview before publishing
-- 📊 View site analytics
-- 🔍 SEO optimization
-- 💬 Add comments (Giscus, Disqus, etc.)
-- 📈 Track with Google Analytics
-
-## 🛠️ Tech Stack
-
-- **[Hugo](https://gohugo.io/)** - Static site generator
-- **[Hugo Narrow Theme](https://github.com/tom2almighty/hugo-narrow)** - Beautiful theme
-- **[Decap CMS](https://decapcms.org/)** - Content management system
-- **[Tailwind CSS](https://tailwindcss.com/)** - Styling
-- **[Docker](https://www.docker.com/)** - Containerization
-- **[Nginx](https://nginx.org/)** - Web server (production)
-- **[GitHub Actions](https://github.com/features/actions)** - CI/CD
-- **[Vercel](https://vercel.com/)** - Hosting (recommended)
-
-## 📂 Project Structure
-
-```
-hugo-narrow-cms/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml          # CI/CD configuration
-├── content/
-│   ├── posts/                  # Blog posts
-│   ├── about.md                # About page
-│   └── _index.md               # Home page
-├── docker/
-│   ├── nginx.conf              # Nginx configuration
-│   └── admin-nginx.conf        # Admin proxy config
-├── static/
-│   └── admin/
-│       ├── index.html          # Admin panel
-│       └── config.yml          # CMS configuration
-├── themes/
-│   └── hugo-narrow/            # Theme files
-├── Dockerfile                  # Docker image definition
-├── docker-compose.yml          # Docker Compose config
-├── Makefile                    # Make commands
-├── hugo.yaml                   # Site configuration
-├── vercel.json                 # Vercel configuration
-├── docker-deploy.sh            # Docker deployment script
-├── setup.sh                    # Setup automation script
-├── install.sh                  # Hugo installation script
-├── README.md                   # This file
-├── QUICK_START.md              # Quick start guide
-├── DOCKER.md                   # Docker documentation
-└── DEPLOYMENT.md               # Deployment guide
+```bash
+./docker-deploy.sh
 ```
 
-## 🎨 Customization
+**Меню**:
+1. Development (с live reload)
+2. Production (оптимизированная сборка)
+3. Остановить все контейнеры
+4. Очистка (удалить контейнеры и образы)
 
-### Change Site Title and Description
+### Режимы работы
 
-Edit `hugo.yaml`:
+<table>
+<tr>
+<th>Development</th>
+<th>Production</th>
+</tr>
+<tr>
+<td>
 
+- ✅ Live reload
+- ✅ Черновики видны
+- ✅ Быстрая сборка
+- ✅ Hugo сервер
+- 🌐 Port 1313
+
+</td>
+<td>
+
+- ✅ Минификация
+- ✅ Gzip сжатие
+- ✅ Кэширование
+- ✅ Nginx сервер
+- 🌐 Port 80
+
+</td>
+</tr>
+</table>
+
+### Производительность
+
+- **Время сборки Hugo**: ~680ms
+- **Время сборки Docker**: ~2 мин (первый раз), ~30 сек (кэш)
+- **Размер образа dev**: ~100MB
+- **Размер образа prod**: ~30MB
+- **Использование RAM**: 50-100MB
+
+### Развертывание на VPS
+
+```bash
+# SSH на сервер
+ssh user@your-server.com
+
+# Клонировать
+git clone https://github.com/sileade/hugo-narrow-cms.git
+cd hugo-narrow-cms
+
+# Запустить production
+./docker-deploy.sh  # Выберите 2
+
+# Доступ по адресу
+http://your-server-ip
+```
+
+📖 **Полное руководство**: [DOCKER.md](DOCKER.md) - 70+ разделов с примерами
+
+---
+
+## 📖 Документация
+
+| Документ | Описание |
+|----------|----------|
+| [QUICK_START.md](QUICK_START.md) | Быстрый старт за 5 минут |
+| [DOCKER.md](DOCKER.md) | Полное руководство по Docker |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Развертывание на Vercel/Netlify/GitHub Pages |
+| [SUMMARY.md](SUMMARY.md) | Обзор проекта и чеклист |
+| [PROJECT_STRUCTURE.txt](PROJECT_STRUCTURE.txt) | Структура файлов |
+
+---
+
+## 🎯 Возможности
+
+### Создание контента
+
+<table>
+<tr>
+<td width="50%">
+
+**Через админ-панель** (Рекомендуется)
+1. Открыть `/admin/`
+2. Войти через GitHub
+3. Нажать "New Post"
+4. Написать контент
+5. Нажать "Publish"
+
+</td>
+<td width="50%">
+
+**Через командную строку**
+```bash
+# Создать пост
+hugo new posts/my-post.md
+
+# Редактировать
+nano content/posts/my-post.md
+
+# Закоммитить
+git add .
+git commit -m "New post"
+git push
+```
+
+</td>
+</tr>
+</table>
+
+### Кастомизация
+
+**Изменить название сайта** (`hugo.yaml`):
 ```yaml
-title: Your Blog Name
+title: Мой Блог
 params:
-  description: "Your blog description"
+  description: "Описание моего блога"
   author:
-    name: "Your Name"
-    title: "Your Title"
+    name: "Ваше Имя"
 ```
 
-### Change Color Theme
-
-Edit `hugo.yaml`:
-
+**Изменить цветовую тему** (`hugo.yaml`):
 ```yaml
 params:
-  colorScheme: "default"  # Options: default, claude, bumblebee, emerald, nord, sunset, abyss, dracula, amethyst, slate, twitter
+  colorScheme: "claude"
 ```
 
-### Add Social Links
+**Доступные темы**:
+- `default` - Чистый и минималистичный
+- `claude` - Вдохновлен Claude AI
+- `bumblebee` - Яркий желтый
+- `emerald` - Свежий зеленый
+- `nord` - Холодный нордический
+- `sunset` - Теплый оранжевый
+- `abyss` - Глубокий темный
+- `dracula` - Классический темный
+- `amethyst` - Фиолетовая элегантность
+- `slate` - Профессиональный серый
+- `twitter` - В стиле Twitter
 
-Edit `hugo.yaml`:
-
+**Добавить социальные ссылки** (`hugo.yaml`):
 ```yaml
 menus:
   social:
@@ -261,163 +308,403 @@ menus:
         icon: twitter
 ```
 
-### Enable Comments
-
-Edit `hugo.yaml`:
-
+**Включить комментарии** (`hugo.yaml`):
 ```yaml
 params:
   comments:
     enabled: true
-    system: "giscus"  # Options: giscus, disqus, utterances, waline, artalk, twikoo
+    system: "giscus"  # giscus, disqus, utterances, waline, artalk, twikoo
 ```
 
-## 📝 Creating Content
-
-### Via Admin Panel (Recommended)
-
-1. Go to `https://your-site.com/admin/`
-2. Login with GitHub
-3. Click "New Post"
-4. Write your content
-5. Click "Publish"
-
-### Via Command Line
-
-```bash
-# Create a new post
-hugo new posts/my-new-post.md
-
-# Edit the file
-nano content/posts/my-new-post.md
-
-# Commit and push
-git add .
-git commit -m "Add new post"
-git push
-```
-
-### Manually
-
-Create a file in `content/posts/` with this frontmatter:
-
-```yaml
----
-title: "My New Post"
-date: 2025-12-15T10:00:00+03:00
-draft: false
-description: "Post description"
-categories: ["Technology"]
-tags: ["hugo", "blog"]
-image: "/images/post-cover.jpg"
 ---
 
-Your content here...
+## 🛠️ Технологии
+
+<table>
+<tr>
+<td align="center" width="20%">
+<img src="https://gohugo.io/img/hugo-logo.png" width="60" height="60" alt="Hugo"/><br/>
+<b>Hugo</b><br/>
+0.146.0
+</td>
+<td align="center" width="20%">
+<img src="https://www.docker.com/wp-content/uploads/2022/03/Moby-logo.png" width="60" height="60" alt="Docker"/><br/>
+<b>Docker</b><br/>
+Containerization
+</td>
+<td align="center" width="20%">
+<img src="https://nginx.org/nginx.png" width="60" height="60" alt="Nginx"/><br/>
+<b>Nginx</b><br/>
+Web Server
+</td>
+<td align="center" width="20%">
+<img src="https://decapcms.org/img/decap-logo.svg" width="60" height="60" alt="Decap CMS"/><br/>
+<b>Decap CMS</b><br/>
+Admin Panel
+</td>
+<td align="center" width="20%">
+<img src="https://tailwindcss.com/_next/static/media/tailwindcss-mark.3c5441fc7a190fb1800d4a5c7f07ba4b1345a9c8.svg" width="60" height="60" alt="Tailwind"/><br/>
+<b>Tailwind CSS</b><br/>
+Styling
+</td>
+</tr>
+</table>
+
+---
+
+## 📂 Структура проекта
+
+```
+hugo-narrow-cms/
+├── 🐳 Docker
+│   ├── Dockerfile                  # Multi-stage образ
+│   ├── docker-compose.yml          # Конфигурация сервисов
+│   ├── docker-deploy.sh            # Скрипт развертывания
+│   ├── Makefile                    # Make команды
+│   └── docker/
+│       ├── nginx.conf              # Production Nginx
+│       └── admin-nginx.conf        # Admin proxy
+│
+├── 📝 Контент
+│   ├── content/
+│   │   ├── posts/                  # Посты блога
+│   │   ├── about.md                # Страница "О нас"
+│   │   └── _index.md               # Главная страница
+│   └── static/
+│       └── admin/                  # Админ-панель
+│           ├── index.html          # CMS интерфейс
+│           └── config.yml          # CMS конфигурация
+│
+├── 🎨 Тема
+│   └── themes/hugo-narrow/         # Файлы темы
+│
+├── ⚙️ Конфигурация
+│   ├── hugo.yaml                   # Настройки сайта
+│   ├── vercel.json                 # Vercel конфиг
+│   └── .github/workflows/
+│       └── deploy.yml              # CI/CD
+│
+├── 📚 Документация
+│   ├── README.md                   # Этот файл
+│   ├── QUICK_START.md              # Быстрый старт
+│   ├── DOCKER.md                   # Docker руководство
+│   ├── DEPLOYMENT.md               # Развертывание
+│   └── SUMMARY.md                  # Обзор проекта
+│
+└── 🔧 Скрипты
+    ├── setup.sh                    # Настройка проекта
+    └── install.sh                  # Установка Hugo
 ```
 
-## 🚀 Deployment Options
+---
 
-### Docker (Local/VPS)
+## 🚀 Варианты развертывания
+
+### 1. Docker (Локально/VPS) 🐳
 
 ```bash
-# Development
-./docker-deploy.sh  # Select option 1
-
-# Production
-./docker-deploy.sh  # Select option 2
-
-# Or use Make
-make dev   # Development
-make prod  # Production
+# Один из способов:
+./docker-deploy.sh    # Интерактивный
+make dev             # Development
+make prod            # Production
 ```
 
-### Vercel (Recommended)
+**Когда использовать**:
+- ✅ Локальная разработка
+- ✅ VPS/Dedicated сервер
+- ✅ Нужен полный контроль
+- ✅ Тестирование production сборки
 
-1. Push your code to GitHub
-2. Go to [vercel.com](https://vercel.com)
-3. Click "New Project"
-4. Import your repository
-5. Click "Deploy"
+---
 
-### Netlify
+### 2. Vercel (Рекомендуется для продакшена) ☁️
 
-1. Go to [netlify.com](https://netlify.com)
-2. Click "Add new site"
-3. Import from GitHub
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sileade/hugo-narrow-cms)
+
+**Когда использовать**:
+- ✅ Быстрое развертывание
+- ✅ Автоматические деплои
+- ✅ Global CDN
+- ✅ Бесплатный SSL
+- ✅ Preview deployments
+
+---
+
+### 3. Netlify ☁️
+
+1. Перейти на [netlify.com](https://netlify.com)
+2. "Add new site" → "Import from GitHub"
+3. Выбрать репозиторий
 4. Deploy!
 
-### GitHub Pages
+**Когда использовать**:
+- ✅ Нужен Netlify Identity
+- ✅ Обработка форм
+- ✅ Serverless функции
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
+---
 
-## 🔐 Admin Panel Setup
+### 4. GitHub Pages 📄
 
-### GitHub Backend (Simplest)
+См. [DEPLOYMENT.md](DEPLOYMENT.md) для инструкций.
 
-Already configured! Just:
+**Когда использовать**:
+- ✅ Бесплатный хостинг
+- ✅ Простой сайт
+- ✅ GitHub интеграция
 
-1. Go to `https://your-site.com/admin/`
-2. Click "Login with GitHub"
-3. Authorize the app
-4. Start editing!
+---
 
-### Netlify Identity (More Secure)
+## 🔐 Настройка админ-панели
 
-1. Enable Netlify Identity in your Netlify site settings
-2. Enable Git Gateway
-3. Update `static/admin/config.yml`:
+### GitHub Backend (Проще всего)
+
+**Уже настроено!** Просто:
+
+1. Открыть `https://your-site.com/admin/`
+2. Нажать "Login with GitHub"
+3. Авторизовать приложение
+4. Начать редактирование!
+
+### Netlify Identity (Более безопасно)
+
+1. Включить Netlify Identity в настройках сайта
+2. Включить Git Gateway
+3. Обновить `static/admin/config.yml`:
    ```yaml
    backend:
      name: git-gateway
      branch: main
    ```
-4. Invite users via Netlify dashboard
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- [Hugo Narrow Theme](https://github.com/tom2almighty/hugo-narrow) by tom2almighty
-- [Decap CMS](https://decapcms.org/) for the admin panel
-- [Hugo](https://gohugo.io/) static site generator
-- [Tailwind CSS](https://tailwindcss.com/) for styling
-- [Docker](https://www.docker.com/) for containerization
-
-## 📞 Support
-
-- 📖 [Hugo Documentation](https://gohugo.io/documentation/)
-- 🐳 [Docker Documentation](https://docs.docker.com/)
-- 💬 [Hugo Forum](https://discourse.gohugo.io/)
-- 🐛 [Report Issues](https://github.com/sileade/hugo-narrow-cms/issues)
-
-## 🌟 Show Your Support
-
-Give a ⭐️ if this project helped you!
-
-## 📊 Stats
-
-- **Theme**: Hugo Narrow
-- **CMS**: Decap CMS
-- **Build Time**: ~680ms
-- **Docker Build**: ~2 minutes
-- **Lighthouse Score**: 100/100
-- **Languages**: 4 (EN, ZH, JA, FR)
-- **Themes**: 11 color schemes
+4. Пригласить пользователей через Netlify
 
 ---
 
-**Made with ❤️ using Hugo, Decap CMS, and Docker**
+## 🌍 Мультиязычность
 
-[🌐 Live Demo](https://hugo-narrow.vercel.app) | [📖 Documentation](QUICK_START.md) | [🐳 Docker Guide](DOCKER.md) | [🚀 Deploy Now](https://vercel.com/new/clone?repository-url=https://github.com/sileade/hugo-narrow-cms)
+Поддерживаемые языки:
+- 🇬🇧 English
+- 🇨🇳 简体中文 (Chinese Simplified)
+- 🇯🇵 日本語 (Japanese)
+- 🇫🇷 Français (French)
+
+**Добавить новый язык** (`hugo.yaml`):
+```yaml
+languages:
+  ru:
+    languageCode: ru-RU
+    languageName: "Русский"
+    weight: 5
+```
+
+---
+
+## 📊 Производительность
+
+### Метрики
+
+| Метрика | Значение |
+|---------|----------|
+| Lighthouse Score | 100/100 |
+| Build Time | ~680ms |
+| Docker Build (first) | ~2 min |
+| Docker Build (cached) | ~30 sec |
+| Image Size (dev) | ~100MB |
+| Image Size (prod) | ~30MB |
+| Memory Usage | 50-100MB |
+
+### Оптимизации
+
+- ✅ Минификация HTML/CSS/JS
+- ✅ Gzip сжатие
+- ✅ Кэширование статики (1 год)
+- ✅ Lazy loading изображений
+- ✅ Code splitting
+- ✅ CDN ready
+
+---
+
+## 🔒 Безопасность
+
+### Production Nginx
+
+- ✅ Security headers (X-Frame-Options, CSP, etc.)
+- ✅ Защита скрытых файлов
+- ✅ Rate limiting готов
+- ✅ SSL/TLS готов
+
+### Docker
+
+- ✅ Multi-stage builds
+- ✅ Minimal base images (Alpine)
+- ✅ Non-root user
+- ✅ Health checks
+- ✅ Resource limits готовы
+
+---
+
+## 🤝 Участие в разработке
+
+Вклад приветствуется! Пожалуйста, создайте Pull Request.
+
+1. Fork репозитория
+2. Создать ветку (`git checkout -b feature/AmazingFeature`)
+3. Закоммитить изменения (`git commit -m 'Add AmazingFeature'`)
+4. Push в ветку (`git push origin feature/AmazingFeature`)
+5. Открыть Pull Request
+
+---
+
+## 📄 Лицензия
+
+Этот проект лицензирован под MIT License - см. файл [LICENSE](LICENSE).
+
+---
+
+## 🙏 Благодарности
+
+- [Hugo Narrow Theme](https://github.com/tom2almighty/hugo-narrow) by tom2almighty
+- [Decap CMS](https://decapcms.org/) за админ-панель
+- [Hugo](https://gohugo.io/) генератор статических сайтов
+- [Tailwind CSS](https://tailwindcss.com/) за стилизацию
+- [Docker](https://www.docker.com/) за контейнеризацию
+
+---
+
+## 📞 Поддержка
+
+### Документация
+- 📖 [Hugo Docs](https://gohugo.io/documentation/)
+- 🐳 [Docker Docs](https://docs.docker.com/)
+- 💬 [Hugo Forum](https://discourse.gohugo.io/)
+
+### Помощь
+- 🐛 [Сообщить о проблеме](https://github.com/sileade/hugo-narrow-cms/issues)
+- 💡 [Предложить улучшение](https://github.com/sileade/hugo-narrow-cms/issues/new)
+- 📧 Email: support@example.com
+
+---
+
+## 🌟 Поддержите проект
+
+Поставьте ⭐️ если этот проект вам помог!
+
+---
+
+## 📈 Статистика
+
+<table>
+<tr>
+<td align="center">
+<b>⚡ Build Time</b><br/>
+~680ms
+</td>
+<td align="center">
+<b>🐳 Docker Setup</b><br/>
+30 seconds
+</td>
+<td align="center">
+<b>🎨 Themes</b><br/>
+11 colors
+</td>
+<td align="center">
+<b>🌍 Languages</b><br/>
+4 supported
+</td>
+<td align="center">
+<b>📦 Size</b><br/>
+30MB (prod)
+</td>
+</tr>
+</table>
+
+---
+
+## 🎯 Кому подойдет
+
+<table>
+<tr>
+<td width="33%">
+
+### 👨‍💻 Разработчикам
+- ✅ Быстрая настройка
+- ✅ Docker поддержка
+- ✅ Git workflow
+- ✅ CI/CD готов
+- ✅ Кастомизация
+
+</td>
+<td width="33%">
+
+### ✍️ Контент-мейкерам
+- ✅ Простая админка
+- ✅ Визуальный редактор
+- ✅ Без кода
+- ✅ Загрузка изображений
+- ✅ Черновики
+
+</td>
+<td width="33%">
+
+### 🚀 DevOps
+- ✅ Контейнеризация
+- ✅ Масштабируемость
+- ✅ Cloud-ready
+- ✅ Мониторинг
+- ✅ Автоматизация
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🚀 Начните прямо сейчас!
+
+### Выберите свой путь:
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+### 🐳 Docker
+```bash
+git clone REPO
+cd REPO
+make dev
+```
+**30 секунд**
+
+</td>
+<td align="center" width="33%">
+
+### ☁️ Vercel
+[![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sileade/hugo-narrow-cms)
+**1 клик**
+
+</td>
+<td align="center" width="33%">
+
+### 💻 Локально
+```bash
+git clone REPO
+./install.sh
+hugo server -D
+```
+**5 минут**
+
+</td>
+</tr>
+</table>
+
+---
+
+<div align="center">
+
+**Сделано с ❤️ используя Hugo, Decap CMS и Docker**
+
+[🌐 Live Demo](https://hugo-narrow.vercel.app) • [📖 Документация](QUICK_START.md) • [🐳 Docker Guide](DOCKER.md) • [🚀 Deploy](https://vercel.com/new/clone?repository-url=https://github.com/sileade/hugo-narrow-cms)
+
+**Repository**: https://github.com/sileade/hugo-narrow-cms
+
+</div>
