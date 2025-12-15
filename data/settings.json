@@ -1,1 +1,31 @@
-{}
+{
+  "title": "Hugo Narrow CMS",
+  "description": "A beautiful, fast, and modern blog built with Hugo",
+  "author": "Hugo Narrow",
+  "email": "hello@example.com",
+  "bio": "Content creator and developer passionate about web technologies",
+  "avatar": "/images/avatar.jpg",
+  "social": [
+    {
+      "platform": "GitHub",
+      "url": "https://github.com/sileade/hugo-narrow-cms",
+      "icon": "github"
+    },
+    {
+      "platform": "Twitter",
+      "url": "https://twitter.com/example",
+      "icon": "twitter"
+    }
+  ],
+  "seo": {
+    "keywords": ["hugo", "blog", "cms", "static site"],
+    "ga_id": "",
+    "google_verification": ""
+  },
+  "features": {
+    "comments": false,
+    "search": true,
+    "dark_mode": true,
+    "posts_per_page": 10
+  }
+}

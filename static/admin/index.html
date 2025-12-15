@@ -1,19 +1,406 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex" />
-  <title>Content Manager</title>
+  <title>Hugo Narrow CMS - Admin Panel</title>
+  
+  <!-- Decap CMS -->
   <link href="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.css" rel="stylesheet" />
-</head>
-<body>
-  <!-- Include the script that builds the page and powers Decap CMS -->
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
   
-  <!-- Custom preview styles -->
+  <!-- Custom Styles -->
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success-color: #10b981;
+      --danger-color: #ef4444;
+      --warning-color: #f59e0b;
+      --background: #f9fafb;
+      --surface: #ffffff;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --border: #e5e7eb;
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #111827;
+        --surface: #1f2937;
+        --text-primary: #f9fafb;
+        --text-secondary: #9ca3af;
+        --border: #374151;
+      }
+    }
+
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease;
+    }
+
+    .loading-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-logo {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 24px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .loading-text {
+      color: white;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    /* Preview styles */
+    .post-preview {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .preview-header h1 {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: #111827;
+    }
+
+    .preview-meta {
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .preview-description {
+      font-size: 18px;
+      color: #4b5563;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .preview-content {
+      font-size: 16px;
+      line-height: 1.8;
+      color: #374151;
+    }
+
+    .preview-content h2 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-top: 32px;
+      margin-bottom: 16px;
+    }
+
+    .preview-content h3 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-top: 24px;
+      margin-bottom: 12px;
+    }
+
+    .preview-content p {
+      margin-bottom: 16px;
+    }
+
+    .preview-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 24px 0;
+    }
+
+    .preview-content code {
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 14px;
+    }
+
+    .preview-content pre {
+      background: #1f2937;
+      color: #f9fafb;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 24px 0;
+    }
+
+    .preview-content pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    /* Callout styles */
+    .callout {
+      padding: 16px;
+      border-radius: 8px;
+      margin: 24px 0;
+      border-left: 4px solid;
+    }
+
+    .callout-info {
+      background: #eff6ff;
+      border-color: #2563eb;
+      color: #1e40af;
+    }
+
+    .callout-warning {
+      background: #fffbeb;
+      border-color: #f59e0b;
+      color: #92400e;
+    }
+
+    .callout-success {
+      background: #f0fdf4;
+      border-color: #10b981;
+      color: #065f46;
+    }
+
+    .callout-danger {
+      background: #fef2f2;
+      border-color: #ef4444;
+      color: #991b1b;
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+
+    /* Gallery styles */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .gallery img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin: 0;
+    }
+
+    /* Twitter embed */
+    .twitter-embed {
+      background: #f3f4f6;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      margin: 24px 0;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <svg class="loading-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="40" stroke="white" stroke-width="4" fill="none" opacity="0.3"/>
+      <path d="M50 10 L50 50 L80 50" stroke="white" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="50" cy="50" r="5" fill="white"/>
+    </svg>
+    <div class="loading-text">Hugo Narrow CMS</div>
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- CMS will mount here -->
+  <div id="nc-root"></div>
+
+  <!-- Custom Scripts -->
   <script>
-    CMS.registerPreviewStyle("/css/main.css");
+    // Hide loading screen when CMS is ready
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        document.getElementById('loadingScreen').classList.add('hidden');
+      }, 1000);
+    });
+
+    // Register custom preview styles
+    CMS.registerPreviewStyle('/css/main.css');
+
+    // Custom preview template for posts
+    var PostPreview = createClass({
+      render: function() {
+        var entry = this.props.entry;
+        var title = entry.getIn(['data', 'title']);
+        var date = entry.getIn(['data', 'date']);
+        var description = entry.getIn(['data', 'description']);
+        var body = this.props.widgetFor('body');
+        
+        return h('div', {className: 'post-preview'},
+          h('div', {className: 'preview-header'},
+            h('h1', {}, title),
+            h('div', {className: 'preview-meta'},
+              h('span', {}, new Date(date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              }))
+            ),
+            description && h('p', {className: 'preview-description'}, description)
+          ),
+          h('div', {className: 'preview-content'}, body)
+        );
+      }
+    });
+
+    CMS.registerPreviewTemplate('posts', PostPreview);
+
+    // Custom widgets
+    CMS.registerEditorComponent({
+      id: 'callout',
+      label: 'Callout',
+      fields: [
+        {
+          name: 'type',
+          label: 'Type',
+          widget: 'select',
+          options: ['info', 'warning', 'success', 'danger'],
+          default: 'info'
+        },
+        {
+          name: 'title',
+          label: 'Title',
+          widget: 'string'
+        },
+        {
+          name: 'content',
+          label: 'Content',
+          widget: 'text'
+        }
+      ],
+      pattern: /^{{<\s*callout\s+type="(\w+)"\s+title="([^"]+)"\s*>}}([\s\S]*?){{<\s*\/callout\s*>}}/,
+      fromBlock: function(match) {
+        return {
+          type: match[1],
+          title: match[2],
+          content: match[3]
+        };
+      },
+      toBlock: function(obj) {
+        return `{{< callout type="${obj.type}" title="${obj.title}" >}}\n${obj.content}\n{{< /callout >}}`;
+      },
+      toPreview: function(obj) {
+        return `<div class="callout callout-${obj.type}"><strong>${obj.title}</strong><p>${obj.content}</p></div>`;
+      }
+    });
+
+    // Image gallery component
+    CMS.registerEditorComponent({
+      id: 'gallery',
+      label: 'Image Gallery',
+      fields: [
+        {
+          name: 'images',
+          label: 'Images',
+          widget: 'list',
+          field: {name: 'image', label: 'Image', widget: 'image'}
+        }
+      ],
+      pattern: /^{{<\s*gallery\s*>}}([\s\S]*?){{<\s*\/gallery\s*>}}/,
+      fromBlock: function(match) {
+        return {
+          images: match[1].trim().split('\n').map(img => ({image: img.trim()}))
+        };
+      },
+      toBlock: function(obj) {
+        return `{{< gallery >}}\n${obj.images.map(img => img.image).join('\n')}\n{{< /gallery >}}`;
+      },
+      toPreview: function(obj) {
+        return `<div class="gallery">${obj.images.map(img => `<img src="${img.image}" />`).join('')}</div>`;
+      }
+    });
+
+    // YouTube embed component
+    CMS.registerEditorComponent({
+      id: 'youtube',
+      label: 'YouTube',
+      fields: [{name: 'id', label: 'YouTube Video ID', widget: 'string'}],
+      pattern: /^{{<\s*youtube\s+(\w+)\s*>}}/,
+      fromBlock: function(match) {
+        return {id: match[1]};
+      },
+      toBlock: function(obj) {
+        return `{{< youtube ${obj.id} >}}`;
+      },
+      toPreview: function(obj) {
+        return `<img src="https://img.youtube.com/vi/${obj.id}/maxresdefault.jpg" alt="YouTube Video" style="width:100%;border-radius:8px;" />`;
+      }
+    });
+
+    // Twitter embed component
+    CMS.registerEditorComponent({
+      id: 'twitter',
+      label: 'Twitter',
+      fields: [{name: 'id', label: 'Tweet ID', widget: 'string'}],
+      pattern: /^{{<\s*tweet\s+(\w+)\s*>}}/,
+      fromBlock: function(match) {
+        return {id: match[1]};
+      },
+      toBlock: function(obj) {
+        return `{{< tweet ${obj.id} >}}`;
+      },
+      toPreview: function(obj) {
+        return `<div class="twitter-embed">Tweet ID: ${obj.id}</div>`;
+      }
+    });
+
+    // Console logs
+    console.log('%c🎨 Hugo Narrow CMS Admin Panel', 'color: #667eea; font-size: 20px; font-weight: bold;');
+    console.log('%cVersion: 1.0.0', 'color: #764ba2; font-size: 14px;');
+    console.log('%cCustom widgets loaded!', 'color: #10b981; font-size: 12px;');
   </script>
 </body>
 </html>

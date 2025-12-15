@@ -3,36 +3,70 @@ backend:
   repo: sileade/hugo-narrow-cms
   branch: main
 
+# Publish mode - editorial workflow for drafts/review/publish
+publish_mode: editorial_workflow
+
 # Media files configuration
 media_folder: "static/images/uploads"
 public_folder: "/images/uploads"
+
+# Enable media library
+media_library:
+  name: uploadcare
+  config:
+    publicKey: demo  # Replace with your Uploadcare public key for production
+
+# Site URL for preview
+site_url: https://hugo-narrow-cms.vercel.app
+display_url: https://hugo-narrow-cms.vercel.app
+
+# Logo
+logo_url: https://hugo-narrow.vercel.app/favicon.ico
 
 # Collections configuration
 collections:
   # Blog posts
   - name: "posts"
-    label: "Blog Posts"
+    label: "📝 Blog Posts"
+    label_singular: "Post"
     folder: "content/posts"
     create: true
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    preview_path: "posts/{{slug}}"
     editor:
-      preview: false
+      preview: true
+    summary: "{{title}} - {{date | date('YYYY-MM-DD')}}"
+    sortable_fields: ['date', 'title', 'author']
+    view_filters:
+      - label: "Drafts"
+        field: draft
+        pattern: true
+      - label: "Published"
+        field: draft
+        pattern: false
+    view_groups:
+      - label: "Year"
+        field: date
+        pattern: \d{4}
+      - label: "Author"
+        field: author
     fields:
-      - {label: "Title", name: "title", widget: "string", required: true}
-      - {label: "Publish Date", name: "date", widget: "datetime", required: true}
-      - {label: "Last Modified", name: "lastmod", widget: "datetime", required: false}
-      - {label: "Draft", name: "draft", widget: "boolean", default: false}
-      - {label: "Description", name: "description", widget: "text", required: false}
+      - {label: "Title", name: "title", widget: "string", required: true, hint: "The title of your post"}
+      - {label: "Publish Date", name: "date", widget: "datetime", required: true, hint: "When to publish this post"}
+      - {label: "Last Modified", name: "lastmod", widget: "datetime", required: false, hint: "Last update time"}
+      - {label: "Draft", name: "draft", widget: "boolean", default: true, hint: "Set to false to publish"}
+      - {label: "Description", name: "description", widget: "text", required: false, hint: "Short description for SEO and previews"}
       - {label: "Author", name: "author", widget: "string", default: "Hugo Narrow", required: false}
-      - {label: "Featured Image", name: "image", widget: "image", required: false}
-      - {label: "Categories", name: "categories", widget: "list", required: false}
-      - {label: "Tags", name: "tags", widget: "list", required: false}
+      - {label: "Featured Image", name: "image", widget: "image", required: false, hint: "Main image for the post"}
+      - {label: "Categories", name: "categories", widget: "list", required: false, hint: "Add categories (press Enter after each)"}
+      - {label: "Tags", name: "tags", widget: "list", required: false, hint: "Add tags (press Enter after each)"}
       - {label: "Table of Contents", name: "toc", widget: "boolean", default: true, required: false}
-      - {label: "Body", name: "body", widget: "markdown", required: true}
+      - {label: "Weight", name: "weight", widget: "number", required: false, hint: "Lower numbers appear first"}
+      - {label: "Body", name: "body", widget: "markdown", required: true, hint: "Write your post content here"}
 
   # Pages
   - name: "pages"
-    label: "Pages"
+    label: "📄 Pages"
     files:
       - label: "About Page"
         name: "about"
@@ -40,6 +74,7 @@ collections:
         fields:
           - {label: "Title", name: "title", widget: "string"}
           - {label: "Date", name: "date", widget: "datetime"}
+          - {label: "Description", name: "description", widget: "text", required: false}
           - {label: "Body", name: "body", widget: "markdown"}
       
       - label: "Home Page"
@@ -49,10 +84,20 @@ collections:
           - {label: "Title", name: "title", widget: "string"}
           - {label: "Description", name: "description", widget: "text"}
           - {label: "Body", name: "body", widget: "markdown"}
+      
+      - label: "Contact Page"
+        name: "contact"
+        file: "content/contact.md"
+        fields:
+          - {label: "Title", name: "title", widget: "string"}
+          - {label: "Date", name: "date", widget: "datetime"}
+          - {label: "Description", name: "description", widget: "text", required: false}
+          - {label: "Email", name: "email", widget: "string", required: false}
+          - {label: "Body", name: "body", widget: "markdown"}
 
   # Site Settings
   - name: "settings"
-    label: "Site Settings"
+    label: "⚙️ Site Settings"
     files:
       - label: "Site Configuration"
         name: "config"
@@ -62,10 +107,67 @@ collections:
           - {label: "Site Description", name: "description", widget: "text"}
           - {label: "Author Name", name: "author", widget: "string"}
           - {label: "Author Email", name: "email", widget: "string"}
+          - {label: "Author Bio", name: "bio", widget: "text", required: false}
+          - {label: "Author Avatar", name: "avatar", widget: "image", required: false}
           - label: "Social Links"
             name: "social"
             widget: "list"
             fields:
-              - {label: "Platform", name: "platform", widget: "string"}
+              - {label: "Platform", name: "platform", widget: "select", options: ["Twitter", "GitHub", "LinkedIn", "Facebook", "Instagram", "YouTube", "Email"]}
               - {label: "URL", name: "url", widget: "string"}
-              - {label: "Icon", name: "icon", widget: "string"}
+              - {label: "Icon", name: "icon", widget: "string", required: false}
+          - label: "SEO Settings"
+            name: "seo"
+            widget: "object"
+            fields:
+              - {label: "Meta Keywords", name: "keywords", widget: "list", required: false}
+              - {label: "Google Analytics ID", name: "ga_id", widget: "string", required: false}
+              - {label: "Google Site Verification", name: "google_verification", widget: "string", required: false}
+          - label: "Features"
+            name: "features"
+            widget: "object"
+            fields:
+              - {label: "Enable Comments", name: "comments", widget: "boolean", default: false}
+              - {label: "Enable Search", name: "search", widget: "boolean", default: true}
+              - {label: "Enable Dark Mode", name: "dark_mode", widget: "boolean", default: true}
+              - {label: "Posts Per Page", name: "posts_per_page", widget: "number", default: 10}
+
+  # Media Gallery
+  - name: "gallery"
+    label: "🖼️ Media Gallery"
+    folder: "content/gallery"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "Title", name: "title", widget: "string"}
+      - {label: "Date", name: "date", widget: "datetime"}
+      - {label: "Description", name: "description", widget: "text", required: false}
+      - {label: "Images", name: "images", widget: "list", field: {label: "Image", name: "image", widget: "image"}}
+      - {label: "Body", name: "body", widget: "markdown", required: false}
+
+  # Navigation
+  - name: "navigation"
+    label: "🧭 Navigation"
+    files:
+      - label: "Main Menu"
+        name: "menu"
+        file: "data/menu.json"
+        fields:
+          - label: "Menu Items"
+            name: "items"
+            widget: "list"
+            fields:
+              - {label: "Name", name: "name", widget: "string"}
+              - {label: "URL", name: "url", widget: "string"}
+              - {label: "Weight", name: "weight", widget: "number", default: 0}
+              - {label: "External", name: "external", widget: "boolean", default: false}
+
+# Editor settings
+editor:
+  preview: true
+
+# Slug settings
+slug:
+  encoding: "ascii"
+  clean_accents: true
+  sanitize_replacement: "-"

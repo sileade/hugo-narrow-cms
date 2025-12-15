@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "name": "Home",
+      "url": "/",
+      "weight": 1,
+      "external": false
+    },
+    {
+      "name": "Blog",
+      "url": "/posts/",
+      "weight": 2,
+      "external": false
+    },
+    {
+      "name": "About",
+      "url": "/about/",
+      "weight": 3,
+      "external": false
+    },
+    {
+      "name": "Contact",
+      "url": "/contact/",
+      "weight": 4,
+      "external": false
+    }
+  ]
+}
