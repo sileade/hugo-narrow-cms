@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # Development server with live reload
+  hugo-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: hugo-narrow-dev
+    ports:
+      - "1313:1313"
+    volumes:
+      - .:/src
+      - /src/public
+      - /src/resources
+    environment:
+      - HUGO_ENV=development
+    restart: unless-stopped
+    profiles:
+      - dev
+
+  # Production server with Nginx
+  hugo-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: hugo-narrow-prod
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    profiles:
+      - prod
+
+  # Admin panel proxy (for local development with CMS)
+  admin-proxy:
+    image: nginx:alpine
+    container_name: hugo-narrow-admin
+    ports:
+      - "8080:80"
+    volumes:
+      - ./static/admin:/usr/share/nginx/html/admin:ro
+      - ./docker/admin-nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - hugo-dev
+    restart: unless-stopped
+    profiles:
+      - dev
+
+networks:
+  default:
+    name: hugo-narrow-network

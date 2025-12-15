@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+.github
+
+# Hugo
+public/
+resources/_gen/
+.hugo_build.lock
+
+# Documentation
+README.md
+QUICK_START.md
+DEPLOYMENT.md
+SUMMARY.md
+PROJECT_STRUCTURE.txt
+LICENSE
+
+# Scripts
+setup.sh
+install.sh
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node
+node_modules/
+package-lock.json
+yarn.lock
+
+# Temporary
+*.log
+*.tmp
+.env
+.env.local

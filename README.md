@@ -2,7 +2,8 @@
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sileade/hugo-narrow-cms)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Hugo Version](https://img.shields.io/badge/Hugo-0.139.4-blue.svg)](https://gohugo.io/)
+[![Hugo Version](https://img.shields.io/badge/Hugo-0.146.0-blue.svg)](https://gohugo.io/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
 
 A modern, beautiful Hugo static site with an integrated admin panel for easy content management. Built with the stunning [Hugo Narrow theme](https://hugo-narrow.vercel.app) and powered by Decap CMS.
 
@@ -40,20 +41,42 @@ A modern, beautiful Hugo static site with an integrated admin panel for easy con
 ### 🔧 Developer Friendly
 - **Git-based Workflow** - Version control for all content
 - **CI/CD Ready** - Automatic deployment on push
+- **Docker Support** - One-command deployment
 - **Customizable** - Easy to extend and modify
 - **Well Documented** - Comprehensive guides and examples
 
-## 🚀 Quick Start (2 Minutes)
+## 🚀 Quick Start
 
-### Option 1: One-Click Deploy
+### Option 1: Docker (Fastest - 30 seconds) 🐳
+
+**Prerequisites**: Docker installed ([Get Docker](https://docs.docker.com/get-docker/))
+
+```bash
+# Clone the repository
+git clone https://github.com/sileade/hugo-narrow-cms.git
+cd hugo-narrow-cms
+
+# Start development server
+./docker-deploy.sh
+# Select option 1
+
+# Or use Make
+make dev
+```
+
+**Access**:
+- Website: http://localhost:1313
+- Admin: http://localhost:1313/admin/
+
+See [DOCKER.md](DOCKER.md) for detailed Docker documentation.
+
+### Option 2: One-Click Deploy (Vercel)
 
 Click this button to deploy your own copy:
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sileade/hugo-narrow-cms)
 
-That's it! Your site is live! 🎉
-
-### Option 2: Manual Setup
+### Option 3: Local Installation
 
 ```bash
 # 1. Clone the repository
@@ -74,8 +97,60 @@ hugo server -D
 ## 📖 Documentation
 
 - **[Quick Start Guide](QUICK_START.md)** - Get started in 5 minutes
-- **[Deployment Guide](DEPLOYMENT.md)** - Deploy to Vercel, Netlify, GitHub Pages, or self-host
+- **[Docker Guide](DOCKER.md)** - Complete Docker deployment guide
+- **[Deployment Guide](DEPLOYMENT.md)** - Deploy to Vercel, Netlify, GitHub Pages
 - **[Project Structure](PROJECT_STRUCTURE.txt)** - Understanding the file structure
+
+## 🐳 Docker Deployment
+
+### Quick Commands
+
+```bash
+# Development mode (with live reload)
+make dev
+
+# Production mode (optimized)
+make prod
+
+# Stop all containers
+make stop
+
+# View logs
+make logs
+
+# Clean up
+make clean
+```
+
+### Docker Compose Profiles
+
+```bash
+# Development
+docker-compose --profile dev up -d
+
+# Production
+docker-compose --profile prod up -d
+
+# Stop
+docker-compose --profile dev --profile prod down
+```
+
+### Features
+
+**Development Mode**:
+- ✅ Live reload on file changes
+- ✅ Draft posts visible
+- ✅ Admin panel accessible
+- ✅ Hot module replacement
+
+**Production Mode**:
+- ✅ Optimized build (minified)
+- ✅ Nginx web server
+- ✅ Gzip compression
+- ✅ Static file caching
+- ✅ Security headers
+
+See [DOCKER.md](DOCKER.md) for complete documentation.
 
 ## 🎯 What Can You Do?
 
@@ -106,6 +181,8 @@ hugo server -D
 - **[Hugo Narrow Theme](https://github.com/tom2almighty/hugo-narrow)** - Beautiful theme
 - **[Decap CMS](https://decapcms.org/)** - Content management system
 - **[Tailwind CSS](https://tailwindcss.com/)** - Styling
+- **[Docker](https://www.docker.com/)** - Containerization
+- **[Nginx](https://nginx.org/)** - Web server (production)
 - **[GitHub Actions](https://github.com/features/actions)** - CI/CD
 - **[Vercel](https://vercel.com/)** - Hosting (recommended)
 
@@ -120,18 +197,26 @@ hugo-narrow-cms/
 │   ├── posts/                  # Blog posts
 │   ├── about.md                # About page
 │   └── _index.md               # Home page
+├── docker/
+│   ├── nginx.conf              # Nginx configuration
+│   └── admin-nginx.conf        # Admin proxy config
 ├── static/
 │   └── admin/
 │       ├── index.html          # Admin panel
 │       └── config.yml          # CMS configuration
 ├── themes/
 │   └── hugo-narrow/            # Theme files
+├── Dockerfile                  # Docker image definition
+├── docker-compose.yml          # Docker Compose config
+├── Makefile                    # Make commands
 ├── hugo.yaml                   # Site configuration
 ├── vercel.json                 # Vercel configuration
+├── docker-deploy.sh            # Docker deployment script
 ├── setup.sh                    # Setup automation script
 ├── install.sh                  # Hugo installation script
 ├── README.md                   # This file
 ├── QUICK_START.md              # Quick start guide
+├── DOCKER.md                   # Docker documentation
 └── DEPLOYMENT.md               # Deployment guide
 ```
 
@@ -230,7 +315,21 @@ image: "/images/post-cover.jpg"
 Your content here...
 ```
 
-## 🚀 Deployment
+## 🚀 Deployment Options
+
+### Docker (Local/VPS)
+
+```bash
+# Development
+./docker-deploy.sh  # Select option 1
+
+# Production
+./docker-deploy.sh  # Select option 2
+
+# Or use Make
+make dev   # Development
+make prod  # Production
+```
 
 ### Vercel (Recommended)
 
@@ -240,17 +339,12 @@ Your content here...
 4. Import your repository
 5. Click "Deploy"
 
-**Done!** Your site is live at `https://your-project.vercel.app`
-
 ### Netlify
 
 1. Go to [netlify.com](https://netlify.com)
 2. Click "Add new site"
 3. Import from GitHub
-4. Configure:
-   - Build command: `hugo --minify`
-   - Publish directory: `public`
-5. Click "Deploy"
+4. Deploy!
 
 ### GitHub Pages
 
@@ -299,13 +393,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Decap CMS](https://decapcms.org/) for the admin panel
 - [Hugo](https://gohugo.io/) static site generator
 - [Tailwind CSS](https://tailwindcss.com/) for styling
+- [Docker](https://www.docker.com/) for containerization
 
 ## 📞 Support
 
 - 📖 [Hugo Documentation](https://gohugo.io/documentation/)
+- 🐳 [Docker Documentation](https://docs.docker.com/)
 - 💬 [Hugo Forum](https://discourse.gohugo.io/)
 - 🐛 [Report Issues](https://github.com/sileade/hugo-narrow-cms/issues)
-- 📧 Email: support@example.com
 
 ## 🌟 Show Your Support
 
@@ -315,13 +410,14 @@ Give a ⭐️ if this project helped you!
 
 - **Theme**: Hugo Narrow
 - **CMS**: Decap CMS
-- **Build Time**: ~100ms
+- **Build Time**: ~680ms
+- **Docker Build**: ~2 minutes
 - **Lighthouse Score**: 100/100
 - **Languages**: 4 (EN, ZH, JA, FR)
 - **Themes**: 11 color schemes
 
 ---
 
-**Made with ❤️ using Hugo and Decap CMS**
+**Made with ❤️ using Hugo, Decap CMS, and Docker**
 
-[🌐 Live Demo](https://hugo-narrow.vercel.app) | [📖 Documentation](QUICK_START.md) | [🚀 Deploy Now](https://vercel.com/new/clone?repository-url=https://github.com/sileade/hugo-narrow-cms)
+[🌐 Live Demo](https://hugo-narrow.vercel.app) | [📖 Documentation](QUICK_START.md) | [🐳 Docker Guide](DOCKER.md) | [🚀 Deploy Now](https://vercel.com/new/clone?repository-url=https://github.com/sileade/hugo-narrow-cms)
