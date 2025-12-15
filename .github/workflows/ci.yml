@@ -1,0 +1,288 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run tests daily at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Check YAML files
+        run: |
+          echo "Checking YAML syntax..."
+          for file in $(find . -name "*.yml" -o -name "*.yaml"); do
+            echo "Checking $file"
+            python3 -c "import yaml; yaml.safe_load(open('$file'))" || exit 1
+          done
+          echo "✅ All YAML files are valid"
+      
+      - name: Check JSON files
+        run: |
+          echo "Checking JSON syntax..."
+          for file in $(find . -name "*.json"); do
+            echo "Checking $file"
+            python3 -c "import json; json.load(open('$file'))" || exit 1
+          done
+          echo "✅ All JSON files are valid"
+      
+      - name: Check Markdown files
+        uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          globs: '**/*.md'
+          config: |
+            {
+              "default": true,
+              "MD013": false,
+              "MD033": false,
+              "MD041": false
+            }
+      
+      - name: Check shell scripts
+        run: |
+          echo "Checking shell scripts..."
+          for script in $(find . -name "*.sh"); do
+            echo "Checking $script"
+            bash -n "$script" || exit 1
+          done
+          echo "✅ All shell scripts are valid"
+
+  quick-test:
+    name: Quick Test
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+      
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: '0.146.0'
+          extended: true
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install pyyaml
+      
+      - name: Make scripts executable
+        run: chmod +x *.sh
+      
+      - name: Run quick analysis
+        run: ./analyze-repo.sh
+      
+      - name: Run issue checks
+        run: ./check-issues.sh
+      
+      - name: Run single test
+        run: ./test-repository.sh 1
+      
+      - name: Build site
+        run: hugo --minify
+
+  performance-test:
+    name: Performance Test
+    runs-on: ubuntu-latest
+    needs: quick-test
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+      
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: '0.146.0'
+          extended: true
+      
+      - name: Benchmark build performance
+        run: |
+          echo "Running performance benchmarks..."
+          
+          # Run 10 builds and measure time
+          TOTAL_TIME=0
+          for i in {1..10}; do
+            START=$(date +%s%N)
+            hugo --minify > /dev/null 2>&1
+            END=$(date +%s%N)
+            DURATION=$((($END - $START) / 1000000))
+            echo "Build $i: ${DURATION}ms"
+            TOTAL_TIME=$(($TOTAL_TIME + $DURATION))
+            rm -rf public
+          done
+          
+          AVG_TIME=$(($TOTAL_TIME / 10))
+          echo ""
+          echo "=========================================="
+          echo "Performance Results"
+          echo "=========================================="
+          echo "Average build time: ${AVG_TIME}ms"
+          echo "Total builds: 10"
+          
+          # Check if build time is acceptable (< 2000ms)
+          if [ $AVG_TIME -gt 2000 ]; then
+            echo "⚠️  Build time is slower than expected"
+            exit 1
+          else
+            echo "✅ Build performance is excellent!"
+          fi
+      
+      - name: Check build size
+        run: |
+          hugo --minify
+          SIZE=$(du -sb public | awk '{print $1}')
+          SIZE_MB=$((SIZE / 1024 / 1024))
+          
+          echo "Build size: ${SIZE_MB} MB"
+          
+          # Check if size is acceptable (< 50MB)
+          if [ $SIZE_MB -gt 50 ]; then
+            echo "⚠️  Build size is larger than expected"
+            exit 1
+          else
+            echo "✅ Build size is optimal!"
+          fi
+
+  compatibility-test:
+    name: Hugo Version Compatibility
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        hugo-version: ['0.146.0', '0.145.0', '0.140.0']
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+      
+      - name: Setup Hugo ${{ matrix.hugo-version }}
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: ${{ matrix.hugo-version }}
+          extended: true
+      
+      - name: Test build with Hugo ${{ matrix.hugo-version }}
+        run: |
+          echo "Testing with Hugo ${{ matrix.hugo-version }}"
+          hugo --minify
+          echo "✅ Build successful with Hugo ${{ matrix.hugo-version }}"
+
+  documentation-check:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Check required documentation
+        run: |
+          echo "Checking required documentation files..."
+          
+          REQUIRED_DOCS=(
+            "README.md"
+            "DOCKER.md"
+            "WEBHOOK_SETUP.md"
+            "TESTING.md"
+            "CONTRIBUTING.md"
+            "ADMIN_PANEL.md"
+            "LICENSE"
+          )
+          
+          ALL_EXIST=true
+          for doc in "${REQUIRED_DOCS[@]}"; do
+            if [ -f "$doc" ]; then
+              SIZE=$(wc -c < "$doc")
+              echo "✅ $doc exists (${SIZE} bytes)"
+            else
+              echo "❌ $doc is missing"
+              ALL_EXIST=false
+            fi
+          done
+          
+          if [ "$ALL_EXIST" = false ]; then
+            exit 1
+          fi
+          
+          echo ""
+          echo "✅ All required documentation files exist!"
+      
+      - name: Check documentation links
+        run: |
+          echo "Checking for broken links in documentation..."
+          
+          # Check if markdown files have broken internal links
+          for md_file in *.md; do
+            echo "Checking links in $md_file"
+            
+            # Extract markdown links
+            grep -oP '\[.*?\]\(\K[^)]+' "$md_file" | while read link; do
+              # Skip external links
+              if [[ $link == http* ]]; then
+                continue
+              fi
+              
+              # Check if file exists
+              if [ ! -f "$link" ]; then
+                echo "⚠️  Broken link in $md_file: $link"
+              fi
+            done
+          done
+          
+          echo "✅ Documentation link check complete"
+
+  status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [lint, quick-test, performance-test, compatibility-test, documentation-check]
+    if: always()
+    
+    steps:
+      - name: Check CI results
+        run: |
+          echo "=========================================="
+          echo "CI Status Summary"
+          echo "=========================================="
+          echo ""
+          echo "Lint: ${{ needs.lint.result }}"
+          echo "Quick Test: ${{ needs.quick-test.result }}"
+          echo "Performance Test: ${{ needs.performance-test.result }}"
+          echo "Compatibility Test: ${{ needs.compatibility-test.result }}"
+          echo "Documentation Check: ${{ needs.documentation-check.result }}"
+          echo ""
+          
+          if [ "${{ needs.lint.result }}" != "success" ] || \
+             [ "${{ needs.quick-test.result }}" != "success" ] || \
+             [ "${{ needs.performance-test.result }}" != "success" ] || \
+             [ "${{ needs.compatibility-test.result }}" != "success" ] || \
+             [ "${{ needs.documentation-check.result }}" != "success" ]; then
+            echo "❌ CI checks failed"
+            exit 1
+          fi
+          
+          echo "✅ All CI checks passed!"
