@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{% if post %}Edit{% else %}New{% endif %} Post - Hugo Admin{% endblock %}
+{% block content %}
+<h1 class="mb-4">{% if post %}Edit{% else %}New{% endif %} Post</h1>
+<form method="POST">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="mb-3">
+                <label class="form-label">Title</label>
+                <input type="text" name="title" class="form-control" value="{{ post.title if post else '' }}" required>
+            </div>
+            {% if not post %}
+            <div class="mb-3">
+                <label class="form-label">Slug (URL)</label>
+                <input type="text" name="slug" class="form-control" placeholder="leave-empty-for-auto">
+            </div>
+            {% endif %}
+            <div class="mb-3">
+                <label class="form-label">Content (Markdown)</label>
+                <textarea name="content" class="form-control" rows="20" style="font-family: monospace;">{{ post.content if post else '' }}</textarea>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header">Publish</div>
+                <div class="card-body">
+                    <div class="form-check mb-3">
+                        <input type="checkbox" name="draft" class="form-check-input" id="draft" 
+                               {% if post and post.draft %}checked{% endif %}>
+                        <label class="form-check-label" for="draft">Save as draft</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-save"></i> Save Post
+                    </button>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-header">Metadata</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3">{{ post.description if post else '' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tags (comma-separated)</label>
+                        <input type="text" name="tags" class="form-control" 
+                               value="{{ post.tags|join(', ') if post and post.tags else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Categories (comma-separated)</label>
+                        <input type="text" name="categories" class="form-control" 
+                               value="{{ post.categories|join(', ') if post and post.categories else '' }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

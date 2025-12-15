@@ -1,0 +1,206 @@
+version: '3.8'
+
+services:
+  # Traefik - Reverse Proxy + SSL
+  traefik:
+    image: traefik:v2.10
+    container_name: hugo-traefik
+    restart: unless-stopped
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      # Redirect HTTP to HTTPS
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+      - ./traefik:/etc/traefik
+    labels:
+      - "traefik.enable=true"
+      # Dashboard
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH}"
+    networks:
+      - web
+
+  # Hugo Site (Nginx)
+  hugo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: hugo-site
+    restart: unless-stopped
+    volumes:
+      - ./public:/usr/share/nginx/html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hugo.rule=Host(`${DOMAIN}`) || Host(`www.${DOMAIN}`)"
+      - "traefik.http.routers.hugo.entrypoints=websecure"
+      - "traefik.http.routers.hugo.tls.certresolver=letsencrypt"
+      - "traefik.http.services.hugo.loadbalancer.server.port=80"
+      # Redirect www to non-www
+      - "traefik.http.middlewares.redirect-www.redirectregex.regex=^https://www\\.(.+)"
+      - "traefik.http.middlewares.redirect-www.redirectregex.replacement=https://$${1}"
+      - "traefik.http.routers.hugo.middlewares=redirect-www"
+    networks:
+      - web
+
+  # Admin Panel (Flask)
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: hugo-admin
+    restart: unless-stopped
+    environment:
+      - SECRET_KEY=${ADMIN_SECRET_KEY}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - GIT_REPO_PATH=/app/content
+      - GIT_USER_NAME=${GIT_USER_NAME}
+      - GIT_USER_EMAIL=${GIT_USER_EMAIL}
+    volumes:
+      - ./content:/app/content
+      - ./static:/app/static
+      - ./admin/db:/app/db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.admin.rule=Host(`${DOMAIN}`) && PathPrefix(`/admin`)"
+      - "traefik.http.routers.admin.entrypoints=websecure"
+      - "traefik.http.routers.admin.tls.certresolver=letsencrypt"
+      - "traefik.http.services.admin.loadbalancer.server.port=5000"
+    networks:
+      - web
+    depends_on:
+      - hugo
+
+  # Uptime Kuma - Monitoring
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: hugo-monitoring
+    restart: unless-stopped
+    volumes:
+      - ./uptime-kuma:/app/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.uptime.rule=Host(`monitor.${DOMAIN}`)"
+      - "traefik.http.routers.uptime.entrypoints=websecure"
+      - "traefik.http.routers.uptime.tls.certresolver=letsencrypt"
+      - "traefik.http.services.uptime.loadbalancer.server.port=3001"
+    networks:
+      - web
+
+  # Umami - Analytics
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: hugo-analytics
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://umami:${POSTGRES_PASSWORD}@db:5432/umami
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${UMAMI_SECRET}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.umami.rule=Host(`analytics.${DOMAIN}`)"
+      - "traefik.http.routers.umami.entrypoints=websecure"
+      - "traefik.http.routers.umami.tls.certresolver=letsencrypt"
+      - "traefik.http.services.umami.loadbalancer.server.port=3000"
+    networks:
+      - web
+      - db
+    depends_on:
+      - db
+
+  # PostgreSQL - Database for Umami
+  db:
+    image: postgres:15-alpine
+    container_name: hugo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: umami
+      POSTGRES_USER: umami
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    networks:
+      - db
+
+  # Backup Service
+  backup:
+    image: alpine:latest
+    container_name: hugo-backup
+    restart: unless-stopped
+    volumes:
+      - ./content:/data/content:ro
+      - ./static:/data/static:ro
+      - ./postgres:/data/postgres:ro
+      - ./backups:/backups
+    command: |
+      sh -c "
+      apk add --no-cache tar gzip &&
+      while true; do
+        echo 'Starting backup...'
+        BACKUP_FILE=/backups/backup-$$(date +%Y%m%d-%H%M%S).tar.gz
+        tar -czf $$BACKUP_FILE /data/content /data/static 2>/dev/null || true
+        echo 'Backup created: '$$BACKUP_FILE
+        # Keep only last 7 days
+        find /backups -name 'backup-*.tar.gz' -mtime +7 -delete
+        echo 'Old backups cleaned'
+        # Backup every 24 hours
+        sleep 86400
+      done
+      "
+    networks:
+      - web
+
+  # Webhook Listener - Auto-deploy on git push
+  webhook:
+    image: almir/webhook
+    container_name: hugo-webhook
+    restart: unless-stopped
+    command: -verbose -hooks=/etc/webhook/hooks.json -hotreload
+    volumes:
+      - ./examples/webhook/hooks.json:/etc/webhook/hooks.json:ro
+      - ./examples/webhook/deploy.sh:/scripts/deploy.sh:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./:/repo
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.webhook.rule=Host(`${DOMAIN}`) && PathPrefix(`/hooks`)"
+      - "traefik.http.routers.webhook.entrypoints=websecure"
+      - "traefik.http.routers.webhook.tls.certresolver=letsencrypt"
+      - "traefik.http.services.webhook.loadbalancer.server.port=9000"
+    networks:
+      - web
+    environment:
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET}
+
+networks:
+  web:
+    name: hugo-web
+  db:
+    name: hugo-db
+    internal: true
+
+volumes:
+  letsencrypt:
+  postgres:
+  uptime-kuma:
+  backups:
