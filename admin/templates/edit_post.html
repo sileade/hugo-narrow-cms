@@ -3,329 +3,193 @@
 {% block title %}{{ 'Edit Post' if post else 'New Post' }}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
 <style>
-/* Override base styles for editor page */
-.editor-wrapper {
-    margin: -2rem;
-    height: calc(100vh - 60px);
+/* Page layout */
+.editor-page {
     display: flex;
-    flex-direction: column;
-    background: #fff;
+    gap: 20px;
+    min-height: calc(100vh - 150px);
+}
+
+.editor-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.editor-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+}
+
+/* Title input */
+.title-input {
+    width: 100%;
+    font-size: 24px;
+    font-weight: 600;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+}
+
+.title-input:focus {
+    outline: none;
+    border-color: #6366f1;
+}
+
+/* EasyMDE customization */
+.EasyMDEContainer {
+    border-radius: 8px;
     overflow: hidden;
 }
 
-/* Header with title and back button */
-.editor-header {
-    display: flex;
-    align-items: center;
-    padding: 12px 16px;
-    background: #fff;
-    border-bottom: 1px solid #e5e7eb;
-    gap: 12px;
-}
-
-.editor-header .back-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    color: #6b7280;
-    text-decoration: none;
-    transition: all 0.15s;
-}
-
-.editor-header .back-btn:hover {
-    background: #f3f4f6;
-    color: #374151;
-}
-
-.editor-header .title-input {
-    flex: 1;
-    border: none;
-    font-size: 18px;
-    font-weight: 600;
-    color: #111827;
-    background: transparent;
-    padding: 8px 12px;
-    border-radius: 8px;
-}
-
-.editor-header .title-input:hover {
-    background: #f9fafb;
-}
-
-.editor-header .title-input:focus {
-    outline: none;
-    background: #f3f4f6;
-}
-
-/* Toolbar */
-.editor-toolbar-row {
-    display: flex;
-    align-items: center;
-    padding: 8px 16px;
-    background: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
-    gap: 4px;
-    flex-wrap: wrap;
-}
-
-.toolbar-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    border: none;
-    background: transparent;
-    color: #6b7280;
-    border-radius: 6px;
-    cursor: pointer;
+.EasyMDEContainer .CodeMirror {
+    border: 2px solid #e5e7eb;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    min-height: 500px;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
     font-size: 14px;
-    transition: all 0.15s;
+    line-height: 1.6;
 }
 
-.toolbar-btn:hover {
+.EasyMDEContainer .CodeMirror-focused {
+    border-color: #6366f1;
+}
+
+.editor-toolbar {
+    border: 2px solid #e5e7eb;
+    border-radius: 8px 8px 0 0;
+    background: #f9fafb;
+    padding: 8px;
+}
+
+.editor-toolbar button {
+    border: none !important;
+    background: transparent;
+    color: #4b5563;
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin: 0 2px;
+}
+
+.editor-toolbar button:hover {
     background: #e5e7eb;
-    color: #374151;
+    color: #1f2937;
 }
 
-.toolbar-btn.active {
+.editor-toolbar button.active {
     background: #dbeafe;
     color: #2563eb;
 }
 
-.toolbar-sep {
-    width: 1px;
-    height: 24px;
-    background: #d1d5db;
+.editor-toolbar i.separator {
+    border-left: 1px solid #d1d5db;
     margin: 0 8px;
 }
 
-.toolbar-spacer {
-    flex: 1;
-}
-
-/* Main content area */
-.editor-body {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-}
-
-/* Left side - Editor + Preview */
-.editor-left {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-
-/* Split panes container */
-.split-container {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-    min-height: 0;
-}
-
-.split-container.mode-split {
-    display: flex;
-}
-
-/* Editor pane */
-.editor-pane {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    min-height: 0;
-    border-right: 1px solid #e5e7eb;
-    overflow: auto;
-    position: relative;
-}
-
-.editor-pane .CodeMirror {
-    height: 100% !important;
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, monospace;
-    font-size: 14px;
-    line-height: 1.6;
-    border: none;
+/* Preview styling */
+.editor-preview {
     background: #fff;
-}
-
-.CodeMirror-focused {
-    outline: none;
-}
-
-.CodeMirror-cursor {
-    border-left: 2px solid #333;
-}
-
-.CodeMirror-scroll {
-    padding: 16px;
-}
-
-.CodeMirror-gutters {
-    background: #fff;
-    border-right: 1px solid #f3f4f6;
-}
-
-.CodeMirror-linenumber {
-    color: #9ca3af;
-    padding: 0 12px 0 8px;
-}
-
-/* Preview pane */
-.preview-pane {
-    flex: 1;
-    overflow-y: auto;
-    padding: 24px 32px;
-    background: #fff;
-    min-width: 0;
-}
-
-.preview-content {
-    max-width: 720px;
-    margin: 0 auto;
+    padding: 20px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 16px;
-    line-height: 1.75;
-    color: #1f2937;
+    line-height: 1.8;
 }
 
-.preview-content h1 { font-size: 2em; font-weight: 700; margin: 0.67em 0; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
-.preview-content h2 { font-size: 1.5em; font-weight: 600; margin: 1em 0 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
-.preview-content h3 { font-size: 1.25em; font-weight: 600; margin: 1em 0 0.5em; }
-.preview-content p { margin: 1em 0; }
-.preview-content a { color: #2563eb; }
-.preview-content code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
-.preview-content pre { background: #f3f4f6; padding: 16px; border-radius: 8px; overflow-x: auto; }
-.preview-content pre code { background: none; padding: 0; }
-.preview-content blockquote { border-left: 4px solid #d1d5db; margin: 1em 0; padding: 0 1em; color: #6b7280; }
-.preview-content ul, .preview-content ol { padding-left: 2em; }
-.preview-content table { width: 100%; border-collapse: collapse; margin: 1em 0; }
-.preview-content th, .preview-content td { border: 1px solid #e5e7eb; padding: 8px 12px; }
-.preview-content th { background: #f9fafb; font-weight: 600; }
-.preview-content img { max-width: 100%; border-radius: 8px; }
-.preview-content hr { border: none; border-top: 1px solid #e5e7eb; margin: 2em 0; }
+.editor-preview h1 { font-size: 2em; font-weight: 700; margin: 0.67em 0; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
+.editor-preview h2 { font-size: 1.5em; font-weight: 600; margin: 1em 0 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
+.editor-preview h3 { font-size: 1.25em; font-weight: 600; margin: 1em 0 0.5em; }
+.editor-preview code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+.editor-preview pre { background: #f3f4f6; padding: 16px; border-radius: 8px; overflow-x: auto; }
+.editor-preview pre code { background: none; padding: 0; }
+.editor-preview blockquote { border-left: 4px solid #d1d5db; margin: 1em 0; padding: 0 1em; color: #6b7280; }
+.editor-preview table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+.editor-preview th, .editor-preview td { border: 1px solid #e5e7eb; padding: 8px 12px; }
+.editor-preview th { background: #f9fafb; font-weight: 600; }
+.editor-preview img { max-width: 100%; border-radius: 8px; }
 
-.preview-placeholder {
-    color: #9ca3af;
-    text-align: center;
-    padding-top: 80px;
+/* Sidebar card */
+.settings-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
-.preview-placeholder i {
-    font-size: 48px;
-    margin-bottom: 16px;
-    display: block;
-}
-
-/* Resizer */
-.pane-resizer {
-    width: 4px;
-    background: #e5e7eb;
-    cursor: col-resize;
-    flex-shrink: 0;
-}
-
-.pane-resizer:hover {
-    background: #3b82f6;
-}
-
-/* Right sidebar - Settings */
-.editor-sidebar {
-    width: 300px;
+.settings-card .card-header {
     background: #f9fafb;
-    border-left: 1px solid #e5e7eb;
-    overflow-y: auto;
-    flex-shrink: 0;
-}
-
-.sidebar-section {
-    padding: 16px;
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 14px;
     border-bottom: 1px solid #e5e7eb;
 }
 
-.sidebar-section h6 {
-    font-size: 12px;
-    font-weight: 600;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 12px;
+.settings-card .card-body {
+    padding: 16px;
 }
 
-.sidebar-section .form-label {
+.settings-card .form-label {
     font-size: 13px;
     font-weight: 500;
     color: #374151;
     margin-bottom: 4px;
 }
 
-.sidebar-section .form-control {
+.settings-card .form-control {
     font-size: 13px;
     border: 1px solid #d1d5db;
     border-radius: 6px;
     padding: 8px 12px;
 }
 
-.sidebar-section .form-control:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+.settings-card .form-control:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-.sidebar-section .form-text {
+.settings-card .form-text {
     font-size: 11px;
     color: #9ca3af;
 }
 
-.sidebar-section .btn-primary {
+/* Buttons */
+.btn-publish {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-publish:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    transform: translateY(-1px);
+}
+
+.btn-preview-link {
     width: 100%;
     padding: 10px 16px;
     font-size: 14px;
-    font-weight: 500;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    color: #374151;
+    cursor: pointer;
+    margin-top: 8px;
 }
 
-.sidebar-section .btn-outline-secondary {
-    width: 100%;
-    padding: 10px 16px;
-    font-size: 14px;
-}
-
-/* Status bar */
-.status-bar {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 16px;
+.btn-preview-link:hover {
     background: #f9fafb;
-    border-top: 1px solid #e5e7eb;
-    font-size: 11px;
-    color: #6b7280;
+    border-color: #9ca3af;
 }
-
-.status-bar .status-group {
-    display: flex;
-    gap: 16px;
-}
-
-.status-bar .status-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-/* View mode classes */
-.split-container.mode-editor .preview-pane,
-.split-container.mode-editor .pane-resizer { display: none; }
-
-.split-container.mode-preview .editor-pane,
-.split-container.mode-preview .pane-resizer { display: none; }
 
 /* Image preview */
 .image-preview {
@@ -339,161 +203,63 @@
     border: 1px solid #e5e7eb;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-    .editor-sidebar { width: 260px; }
+/* Status indicator */
+.autosave-status {
+    font-size: 12px;
+    color: #6b7280;
+    padding: 8px 16px;
+    text-align: center;
+    border-top: 1px solid #e5e7eb;
 }
 
-@media (max-width: 768px) {
-    .editor-body { flex-direction: column; }
-    .editor-sidebar { width: 100%; border-left: none; border-top: 1px solid #e5e7eb; }
-    .split-container { flex-direction: column; }
-    .editor-pane { border-right: none; border-bottom: 1px solid #e5e7eb; }
-    .pane-resizer { display: none; }
+.autosave-status.saving { color: #f59e0b; }
+.autosave-status.saved { color: #10b981; }
+.autosave-status.error { color: #ef4444; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .editor-page {
+        flex-direction: column;
+    }
+    .editor-sidebar {
+        width: 100%;
+    }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="editor-wrapper">
-    <!-- Header -->
-    <div class="editor-header">
-        <a href="{{ admin_url('/posts') }}" class="back-btn" title="Back to Posts">
-            <i class="bi bi-arrow-left"></i>
-        </a>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">
+        <i class="bi bi-pencil-square me-2"></i>
+        {{ 'Edit Post' if post else 'New Post' }}
+    </h4>
+    <a href="{{ admin_url('/posts') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back to Posts
+    </a>
+</div>
+
+<div class="editor-page">
+    <!-- Main Editor Area -->
+    <div class="editor-main">
         <input type="text" class="title-input" id="postTitle" 
                value="{{ post.title if post else '' }}" 
-               placeholder="Post title..." required>
+               placeholder="Enter post title..." required>
+        
+        <textarea id="content">{{ post.content if post else '' }}</textarea>
     </div>
     
-    <!-- Toolbar -->
-    <div class="editor-toolbar-row">
-        <button type="button" class="toolbar-btn" onclick="editor.undo()" title="Undo (Ctrl+Z)">
-            <i class="bi bi-arrow-counterclockwise"></i>
-        </button>
-        <button type="button" class="toolbar-btn" onclick="editor.redo()" title="Redo (Ctrl+Y)">
-            <i class="bi bi-arrow-clockwise"></i>
-        </button>
-        
-        <span class="toolbar-sep"></span>
-        
-        <button type="button" class="toolbar-btn" onclick="insertFormat('bold')" title="Bold (Ctrl+B)">
-            <i class="bi bi-type-bold"></i>
-        </button>
-        <button type="button" class="toolbar-btn" onclick="insertFormat('italic')" title="Italic (Ctrl+I)">
-            <i class="bi bi-type-italic"></i>
-        </button>
-        <button type="button" class="toolbar-btn" onclick="insertFormat('strikethrough')" title="Strikethrough">
-            <i class="bi bi-type-strikethrough"></i>
-        </button>
-        
-        <span class="toolbar-sep"></span>
-        
-        <button type="button" class="toolbar-btn" onclick="insertFormat('h1')" title="Heading 1">
-            <strong>H1</strong>
-        </button>
-        <button type="button" class="toolbar-btn" onclick="insertFormat('h2')" title="Heading 2">
-            <strong>H2</strong>
-        </button>
-        <button type="button" class="toolbar-btn" onclick="insertFormat('h3')" title="Heading 3">
-            <strong>H3</strong>
-        </button>
-        
-        <span class="toolbar-sep"></span>
-        
-        <button type="button" class="toolbar-btn" onclick="insertFormat('ul')" title="Bullet List">
-            <i class="bi bi-list-ul"></i>
-        </button>
-        <button type="button" class="toolbar-btn" onclick="insertFormat('ol')" title="Numbered List">
-            <i class="bi bi-list-ol"></i>
-        </button>
-        <button type="button" class="toolbar-btn" onclick="insertFormat('task')" title="Task List">
-            <i class="bi bi-check2-square"></i>
-        </button>
-        <button type="button" class="toolbar-btn" onclick="insertFormat('quote')" title="Quote">
-            <i class="bi bi-quote"></i>
-        </button>
-        
-        <span class="toolbar-sep"></span>
-        
-        <button type="button" class="toolbar-btn" onclick="insertFormat('code')" title="Inline Code">
-            <i class="bi bi-code"></i>
-        </button>
-        <button type="button" class="toolbar-btn" onclick="insertFormat('codeblock')" title="Code Block">
-            <i class="bi bi-code-square"></i>
-        </button>
-        <button type="button" class="toolbar-btn" onclick="insertFormat('table')" title="Table">
-            <i class="bi bi-table"></i>
-        </button>
-        
-        <span class="toolbar-sep"></span>
-        
-        <button type="button" class="toolbar-btn" onclick="insertFormat('link')" title="Link (Ctrl+K)">
-            <i class="bi bi-link-45deg"></i>
-        </button>
-        <button type="button" class="toolbar-btn" onclick="insertFormat('image')" title="Image">
-            <i class="bi bi-image"></i>
-        </button>
-        <button type="button" class="toolbar-btn" onclick="insertFormat('hr')" title="Horizontal Rule">
-            <i class="bi bi-dash-lg"></i>
-        </button>
-        
-        <span class="toolbar-spacer"></span>
-        
-        <button type="button" class="toolbar-btn" id="btnEditor" onclick="setViewMode('editor')" title="Editor Only">
-            <i class="bi bi-code-slash"></i>
-        </button>
-        <button type="button" class="toolbar-btn active" id="btnSplit" onclick="setViewMode('split')" title="Split View">
-            <i class="bi bi-layout-split"></i>
-        </button>
-        <button type="button" class="toolbar-btn" id="btnPreview" onclick="setViewMode('preview')" title="Preview Only">
-            <i class="bi bi-eye"></i>
-        </button>
-    </div>
-    
-    <!-- Main Body -->
-    <div class="editor-body">
-        <!-- Left: Editor + Preview -->
-        <div class="editor-left">
-            <div class="split-container mode-split" id="splitContainer">
-                <div class="editor-pane">
-                    <textarea id="content" style="width:100%;height:100%;display:block;">{{ post.content if post else '' }}</textarea>
-                </div>
-                <div class="pane-resizer" id="paneResizer"></div>
-                <div class="preview-pane">
-                    <div class="preview-content" id="previewContent">
-                        <div class="preview-placeholder">
-                            <i class="bi bi-pencil"></i>
-                            Start typing to see preview...
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Sidebar -->
+    <div class="editor-sidebar">
+        <form method="POST" action="{{ admin_url('/posts/edit/' + post.filename) if post else admin_url('/posts/new') }}" id="postForm">
+            <input type="hidden" name="title" id="hiddenTitle">
+            <input type="hidden" name="content" id="hiddenContent">
             
-            <!-- Status Bar -->
-            <div class="status-bar">
-                <div class="status-group">
-                    <span class="status-item"><strong>Markdown</strong></span>
-                    <span class="status-item" id="wordCount">0 words</span>
-                    <span class="status-item" id="charCount">0 chars</span>
-                    <span class="status-item" id="lineCount">0 lines</span>
+            <div class="settings-card mb-3">
+                <div class="card-header">
+                    <i class="bi bi-gear me-2"></i>Post Settings
                 </div>
-                <div class="status-group">
-                    <span class="status-item" id="autoSaveStatus"><i class="bi bi-cloud-check"></i> Ready</span>
-                    <span class="status-item" id="cursorPos">Ln 1, Col 0</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Right: Settings Sidebar -->
-        <div class="editor-sidebar">
-            <form method="POST" action="{{ admin_url('/posts/edit/' + post.filename) if post else admin_url('/posts/new') }}" id="postForm">
-                <input type="hidden" name="title" id="hiddenTitle">
-                <input type="hidden" name="content" id="hiddenContent">
-                
-                <div class="sidebar-section">
-                    <h6>Post Settings</h6>
-                    
+                <div class="card-body">
                     <div class="mb-3">
                         <label class="form-label">Slug (URL)</label>
                         <input type="text" name="slug" class="form-control" 
@@ -540,25 +306,25 @@
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="draft" id="draft"
-                                   {% if post and post.draft %}checked{% endif %}>
-                            <label class="form-check-label" for="draft">Save as Draft</label>
-                        </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" name="draft" id="draft"
+                               {% if post and post.draft %}checked{% endif %}>
+                        <label class="form-check-label" for="draft">Save as Draft</label>
                     </div>
                 </div>
                 
-                <div class="sidebar-section">
-                    <button type="submit" class="btn btn-primary mb-2">
-                        <i class="bi bi-check-lg me-1"></i> {{ 'Update Post' if post else 'Create Post' }}
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary" onclick="previewInNewTab()">
-                        <i class="bi bi-box-arrow-up-right me-1"></i> Preview
-                    </button>
+                <div class="autosave-status" id="autosaveStatus">
+                    <i class="bi bi-cloud-check me-1"></i> Ready
                 </div>
-            </form>
-        </div>
+            </div>
+            
+            <button type="submit" class="btn-publish">
+                <i class="bi bi-check-lg me-1"></i> {{ 'Update Post' if post else 'Create Post' }}
+            </button>
+            <button type="button" class="btn-preview-link" onclick="previewInNewTab()">
+                <i class="bi bi-box-arrow-up-right me-1"></i> Preview
+            </button>
+        </form>
     </div>
 </div>
 
@@ -585,151 +351,39 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/gfm/gfm.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/continuelist.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
 <script>
-// Initialize CodeMirror
-var editor = CodeMirror.fromTextArea(document.getElementById('content'), {
-    mode: 'gfm',
-    lineNumbers: true,
-    lineWrapping: true,
-    autofocus: true,
-    inputStyle: 'textarea',
-    viewportMargin: Infinity,
-    extraKeys: {
-        "Enter": "newlineAndIndentContinueMarkdownList",
-        "Ctrl-B": function() { insertFormat('bold'); },
-        "Ctrl-I": function() { insertFormat('italic'); },
-        "Ctrl-K": function() { insertFormat('link'); },
-        "Ctrl-S": function() { savePost(); }
-    }
-});
-
-// Configure marked
-marked.setOptions({
-    highlight: function(code, lang) {
-        if (lang && hljs.getLanguage(lang)) {
-            return hljs.highlight(code, { language: lang }).value;
-        }
-        return hljs.highlightAuto(code).value;
+// Initialize EasyMDE
+var easyMDE = new EasyMDE({
+    element: document.getElementById('content'),
+    spellChecker: false,
+    autosave: {
+        enabled: false
     },
-    breaks: true,
-    gfm: true
+    status: ['lines', 'words', 'cursor'],
+    toolbar: [
+        'bold', 'italic', 'strikethrough', 'heading', '|',
+        'quote', 'unordered-list', 'ordered-list', 'task-list', '|',
+        'link', 'image', 'table', 'horizontal-rule', '|',
+        'code', 'preview', 'side-by-side', 'fullscreen', '|',
+        'guide'
+    ],
+    sideBySideFullscreen: false,
+    previewClass: ['editor-preview'],
+    renderingConfig: {
+        codeSyntaxHighlighting: true
+    },
+    minHeight: '400px',
+    placeholder: 'Write your post content here...\n\nUse Markdown formatting:\n- **bold** for bold text\n- *italic* for italic text\n- # Heading for headers\n- [link](url) for links\n- ![alt](url) for images'
 });
 
-// Update preview
-var updateTimeout;
-editor.on('change', function() {
-    clearTimeout(updateTimeout);
-    updateTimeout = setTimeout(updatePreview, 100);
-    updateStats();
-});
-
-editor.on('cursorActivity', function() {
-    var cursor = editor.getCursor();
-    document.getElementById('cursorPos').textContent = 'Ln ' + (cursor.line + 1) + ', Col ' + cursor.ch;
-});
-
-function updatePreview() {
-    var content = editor.getValue();
-    if (content.trim()) {
-        var html = marked.parse(content);
-        document.getElementById('previewContent').innerHTML = html;
-        document.querySelectorAll('#previewContent pre code').forEach(function(block) {
-            hljs.highlightElement(block);
-        });
-    } else {
-        document.getElementById('previewContent').innerHTML = '<div class="preview-placeholder"><i class="bi bi-pencil"></i>Start typing to see preview...</div>';
-    }
-}
-
-function updateStats() {
-    var content = editor.getValue();
-    var words = content.trim() ? content.trim().split(/\s+/).length : 0;
-    document.getElementById('wordCount').textContent = words + ' words';
-    document.getElementById('charCount').textContent = content.length + ' chars';
-    document.getElementById('lineCount').textContent = editor.lineCount() + ' lines';
-}
-
-function insertFormat(type) {
-    var selection = editor.getSelection();
-    var cursor = editor.getCursor();
-    var line = editor.getLine(cursor.line);
-    
-    var formats = {
-        'bold': { before: '**', after: '**', placeholder: 'bold text' },
-        'italic': { before: '*', after: '*', placeholder: 'italic text' },
-        'strikethrough': { before: '~~', after: '~~', placeholder: 'strikethrough' },
-        'code': { before: '`', after: '`', placeholder: 'code' },
-        'h1': { before: '# ', after: '', placeholder: 'Heading 1', line: true },
-        'h2': { before: '## ', after: '', placeholder: 'Heading 2', line: true },
-        'h3': { before: '### ', after: '', placeholder: 'Heading 3', line: true },
-        'ul': { before: '- ', after: '', placeholder: 'List item', line: true },
-        'ol': { before: '1. ', after: '', placeholder: 'List item', line: true },
-        'task': { before: '- [ ] ', after: '', placeholder: 'Task', line: true },
-        'quote': { before: '> ', after: '', placeholder: 'Quote', line: true },
-        'hr': { before: '\n---\n', after: '', placeholder: '' },
-        'link': { before: '[', after: '](url)', placeholder: 'link text' },
-        'image': { before: '![', after: '](image-url)', placeholder: 'alt text' },
-        'codeblock': { before: '```\n', after: '\n```', placeholder: 'code' },
-        'table': { before: '| Header | Header |\n|--------|--------|\n| Cell   | Cell   |\n', after: '', placeholder: '' }
-    };
-    
-    var format = formats[type];
-    if (!format) return;
-    
-    if (format.line) {
-        var newLine = format.before + (selection || format.placeholder);
-        editor.replaceRange(newLine, {line: cursor.line, ch: 0}, {line: cursor.line, ch: line.length});
-    } else {
-        if (selection) {
-            editor.replaceSelection(format.before + selection + format.after);
-        } else {
-            var text = format.before + format.placeholder + format.after;
-            editor.replaceSelection(text);
-            var newCursor = editor.getCursor();
-            editor.setSelection(
-                {line: newCursor.line, ch: newCursor.ch - format.after.length - format.placeholder.length},
-                {line: newCursor.line, ch: newCursor.ch - format.after.length}
-            );
-        }
-    }
-    editor.focus();
-}
-
-function setViewMode(mode) {
-    var container = document.getElementById('splitContainer');
-    container.className = 'split-container mode-' + mode;
-    
-    document.getElementById('btnEditor').classList.remove('active');
-    document.getElementById('btnSplit').classList.remove('active');
-    document.getElementById('btnPreview').classList.remove('active');
-    
-    if (mode === 'editor') document.getElementById('btnEditor').classList.add('active');
-    else if (mode === 'split') document.getElementById('btnSplit').classList.add('active');
-    else document.getElementById('btnPreview').classList.add('active');
-    
-    if (mode !== 'editor') updatePreview();
-    setTimeout(function() { editor.refresh(); }, 10);
-}
-
-function savePost() {
-    document.getElementById('hiddenTitle').value = document.getElementById('postTitle').value;
-    document.getElementById('hiddenContent').value = editor.getValue();
-    document.getElementById('postForm').submit();
-}
-
+// Preview in new tab
 function previewInNewTab() {
-    var content = editor.getValue();
-    var html = marked.parse(content);
+    var content = easyMDE.value();
     var title = document.getElementById('postTitle').value || 'Preview';
+    var html = easyMDE.markdown(content);
     var w = window.open('', '_blank');
-    w.document.write('<!DOCTYPE html><html><head><title>' + title + '</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:800px;margin:40px auto;padding:20px;line-height:1.8;}pre{background:#f6f8fa;padding:16px;border-radius:6px;overflow-x:auto;}code{background:#f6f8fa;padding:2px 6px;border-radius:3px;}pre code{background:none;padding:0;}blockquote{border-left:4px solid #ddd;margin:1em 0;padding:0.5em 1em;color:#666;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ddd;padding:8px 12px;}th{background:#f6f8fa;}</style></head><body><h1>' + title + '</h1>' + html + '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><\/script><script>hljs.highlightAll();<\/script></body></html>');
+    w.document.write('<!DOCTYPE html><html><head><title>' + title + '</title><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:800px;margin:40px auto;padding:20px;line-height:1.8;}h1{border-bottom:1px solid #eee;padding-bottom:10px;}pre{background:#f6f8fa;padding:16px;border-radius:6px;overflow-x:auto;}code{background:#f6f8fa;padding:2px 6px;border-radius:3px;}pre code{background:none;padding:0;}blockquote{border-left:4px solid #ddd;margin:1em 0;padding:0.5em 1em;color:#666;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ddd;padding:8px 12px;}th{background:#f6f8fa;}</style></head><body><h1>' + title + '</h1>' + html + '</body></html>');
     w.document.close();
 }
 
@@ -794,38 +448,6 @@ document.getElementById('uploadInput').addEventListener('change', function() {
     });
 });
 
-// Pane resizer
-var resizer = document.getElementById('paneResizer');
-var editorPane = document.querySelector('.editor-pane');
-var previewPane = document.querySelector('.preview-pane');
-var isResizing = false;
-
-resizer.addEventListener('mousedown', function(e) {
-    isResizing = true;
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-});
-
-document.addEventListener('mousemove', function(e) {
-    if (!isResizing) return;
-    var container = document.getElementById('splitContainer');
-    var rect = container.getBoundingClientRect();
-    var pct = ((e.clientX - rect.left) / rect.width) * 100;
-    if (pct > 20 && pct < 80) {
-        editorPane.style.flex = '0 0 ' + pct + '%';
-        previewPane.style.flex = '0 0 ' + (100 - pct) + '%';
-    }
-});
-
-document.addEventListener('mouseup', function() {
-    if (isResizing) {
-        isResizing = false;
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-        editor.refresh();
-    }
-});
-
 // Auto-generate slug
 document.getElementById('postTitle').addEventListener('blur', function() {
     var slugInput = document.querySelector('input[name="slug"]');
@@ -837,40 +459,18 @@ document.getElementById('postTitle').addEventListener('blur', function() {
 // Form submission
 document.getElementById('postForm').addEventListener('submit', function(e) {
     document.getElementById('hiddenTitle').value = document.getElementById('postTitle').value;
-    document.getElementById('hiddenContent').value = editor.getValue();
-});
-
-// Paste image
-editor.getWrapperElement().addEventListener('paste', function(e) {
-    var items = e.clipboardData.items;
-    for (var i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-            e.preventDefault();
-            var file = items[i].getAsFile();
-            var formData = new FormData();
-            formData.append('file', file);
-            fetch('{{ admin_url("/upload") }}', { method: 'POST', body: formData })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    editor.replaceSelection('![image](' + data.url + ')');
-                }
-            });
-            break;
-        }
-    }
+    document.getElementById('hiddenContent').value = easyMDE.value();
 });
 
 // Auto-save functionality
-var autoSaveInterval = null;
-var lastSavedContent = '';
 var currentFilename = '{{ post.filename if post else "" }}';
+var lastSavedContent = '';
 var hasUnsavedChanges = false;
 
 function getPostData() {
     return {
         title: document.getElementById('postTitle').value,
-        content: editor.getValue(),
+        content: easyMDE.value(),
         slug: document.querySelector('input[name="slug"]').value,
         description: document.querySelector('textarea[name="description"]').value,
         tags: document.querySelector('input[name="tags"]').value,
@@ -880,24 +480,20 @@ function getPostData() {
     };
 }
 
+function updateAutosaveStatus(status, message) {
+    var el = document.getElementById('autosaveStatus');
+    el.className = 'autosave-status ' + status;
+    el.innerHTML = message;
+}
+
 function autoSave() {
     var data = getPostData();
+    if (!data.title.trim()) return;
     
-    // Don't save if no title
-    if (!data.title.trim()) {
-        return;
-    }
-    
-    // Check if content changed
     var currentContent = JSON.stringify(data);
-    if (currentContent === lastSavedContent) {
-        return;
-    }
+    if (currentContent === lastSavedContent) return;
     
-    // Update status
-    var statusEl = document.getElementById('autoSaveStatus');
-    statusEl.innerHTML = '<i class="bi bi-cloud-arrow-up"></i> Saving...';
-    statusEl.style.color = '#f59e0b';
+    updateAutosaveStatus('saving', '<i class="bi bi-cloud-arrow-up me-1"></i> Saving...');
     
     fetch('{{ admin_url("/posts/autosave") }}', {
         method: 'POST',
@@ -912,20 +508,17 @@ function autoSave() {
             if (response.filename && !currentFilename) {
                 currentFilename = response.filename;
             }
-            statusEl.innerHTML = '<i class="bi bi-cloud-check"></i> Saved ' + response.timestamp;
-            statusEl.style.color = '#10b981';
+            updateAutosaveStatus('saved', '<i class="bi bi-cloud-check me-1"></i> Saved ' + response.timestamp);
         } else {
-            statusEl.innerHTML = '<i class="bi bi-cloud-slash"></i> Save failed';
-            statusEl.style.color = '#ef4444';
+            updateAutosaveStatus('error', '<i class="bi bi-cloud-slash me-1"></i> Save failed');
         }
     })
-    .catch(function(err) {
-        statusEl.innerHTML = '<i class="bi bi-cloud-slash"></i> Save failed';
-        statusEl.style.color = '#ef4444';
+    .catch(function() {
+        updateAutosaveStatus('error', '<i class="bi bi-cloud-slash me-1"></i> Save failed');
     });
 }
 
-// Also save to localStorage as backup
+// Save to localStorage as backup
 function saveToLocalStorage() {
     var data = getPostData();
     if (data.title || data.content) {
@@ -933,29 +526,8 @@ function saveToLocalStorage() {
     }
 }
 
-// Restore from localStorage if available
-function restoreFromLocalStorage() {
-    var key = 'draft_' + (currentFilename || 'new');
-    var saved = localStorage.getItem(key);
-    if (saved && !editor.getValue().trim()) {
-        try {
-            var data = JSON.parse(saved);
-            if (data.content && confirm('Found unsaved draft. Restore it?')) {
-                if (data.title) document.getElementById('postTitle').value = data.title;
-                if (data.content) editor.setValue(data.content);
-                if (data.description) document.querySelector('textarea[name="description"]').value = data.description;
-                if (data.tags) document.querySelector('input[name="tags"]').value = data.tags;
-                if (data.categories) document.querySelector('input[name="categories"]').value = data.categories;
-                if (data.image) document.getElementById('imageUrl').value = data.image;
-                updatePreview();
-                updateStats();
-            }
-        } catch(e) {}
-    }
-}
-
 // Track changes
-editor.on('change', function() {
+easyMDE.codemirror.on('change', function() {
     hasUnsavedChanges = true;
     saveToLocalStorage();
 });
@@ -965,7 +537,7 @@ document.getElementById('postTitle').addEventListener('input', function() {
     saveToLocalStorage();
 });
 
-// Warn before leaving with unsaved changes
+// Warn before leaving
 window.addEventListener('beforeunload', function(e) {
     if (hasUnsavedChanges) {
         e.preventDefault();
@@ -973,47 +545,16 @@ window.addEventListener('beforeunload', function(e) {
     }
 });
 
-// Clear localStorage on successful form submit
+// Clear localStorage on submit
 document.getElementById('postForm').addEventListener('submit', function() {
     hasUnsavedChanges = false;
     localStorage.removeItem('draft_' + (currentFilename || 'new'));
 });
 
-// Start auto-save interval (every 30 seconds)
-autoSaveInterval = setInterval(autoSave, 30000);
+// Start auto-save (every 30 seconds)
+setInterval(autoSave, 30000);
 
 // Initialize
-window.addEventListener('load', function() {
-    // Delay to ensure DOM is fully rendered
-    setTimeout(function() {
-        // Force CodeMirror to recalculate its size
-        editor.setSize(null, '100%');
-        editor.refresh();
-        editor.focus();
-        editor.setCursor(0, 0);
-        updatePreview();
-        updateStats();
-        restoreFromLocalStorage();
-        lastSavedContent = JSON.stringify(getPostData());
-        
-        // Additional refresh after a longer delay
-        setTimeout(function() {
-            editor.refresh();
-            editor.focus();
-        }, 500);
-    }, 100);
-});
-
-// Also refresh on resize
-window.addEventListener('resize', function() {
-    editor.refresh();
-});
-
-// Click handler to focus editor
-document.querySelector('.editor-pane').addEventListener('click', function(e) {
-    if (e.target.classList.contains('editor-pane') || e.target.closest('.CodeMirror')) {
-        editor.focus();
-    }
-});
+lastSavedContent = JSON.stringify(getPostData());
 </script>
 {% endblock %}
