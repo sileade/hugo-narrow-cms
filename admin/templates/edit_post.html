@@ -9,10 +9,11 @@
 /* Override base styles for editor page */
 .editor-wrapper {
     margin: -2rem;
-    height: calc(100vh - 0px);
+    height: calc(100vh - 60px);
     display: flex;
     flex-direction: column;
     background: #fff;
+    overflow: hidden;
 }
 
 /* Header with title and back button */
@@ -129,6 +130,11 @@
     display: flex;
     flex: 1;
     overflow: hidden;
+    min-height: 0;
+}
+
+.split-container.mode-split {
+    display: flex;
 }
 
 /* Editor pane */
@@ -137,15 +143,23 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
+    min-height: 0;
     border-right: 1px solid #e5e7eb;
+    overflow: hidden;
 }
 
 .CodeMirror {
     flex: 1;
-    height: 100% !important;
+    height: auto !important;
+    min-height: 400px;
     font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, monospace;
     font-size: 14px;
     line-height: 1.6;
+    border: none;
+}
+
+.editor-pane .CodeMirror {
+    height: 100% !important;
 }
 
 .CodeMirror-scroll {
@@ -580,6 +594,9 @@ var editor = CodeMirror.fromTextArea(document.getElementById('content'), {
     mode: 'gfm',
     lineNumbers: true,
     lineWrapping: true,
+    autofocus: true,
+    inputStyle: 'contenteditable',
+    spellcheck: true,
     extraKeys: {
         "Enter": "newlineAndIndentContinueMarkdownList",
         "Ctrl-B": function() { insertFormat('bold'); },
@@ -963,11 +980,20 @@ autoSaveInterval = setInterval(autoSave, 30000);
 
 // Initialize
 window.addEventListener('load', function() {
-    updatePreview();
-    updateStats();
+    // Delay to ensure DOM is fully rendered
+    setTimeout(function() {
+        updatePreview();
+        updateStats();
+        editor.refresh();
+        editor.focus();
+        restoreFromLocalStorage();
+        lastSavedContent = JSON.stringify(getPostData());
+    }, 100);
+});
+
+// Also refresh on resize
+window.addEventListener('resize', function() {
     editor.refresh();
-    restoreFromLocalStorage();
-    lastSavedContent = JSON.stringify(getPostData());
 });
 </script>
 {% endblock %}
