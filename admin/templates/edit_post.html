@@ -1,80 +1,487 @@
 {% extends "base.html" %}
-{% block title %}{{ 'Edit' if post else 'New' }} Post - Hugo CMS{% endblock %}
+
+{% block title %}{{ 'Edit Post' if post else 'New Post' }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<style>
+:root {
+    --editor-bg: #1e1e1e;
+    --editor-text: #d4d4d4;
+    --preview-bg: #252526;
+    --toolbar-bg: #333333;
+    --border-color: #3c3c3c;
+    --accent-color: #6c5ce7;
+}
+
+.editor-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 140px);
+    background: var(--editor-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.editor-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    background: var(--toolbar-bg);
+    border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+}
+
+.toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 8px;
+    border-right: 1px solid var(--border-color);
+}
+
+.toolbar-group:last-child { border-right: none; }
+
+.toolbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: #999;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.toolbar-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+
+.toolbar-btn.active {
+    background: var(--accent-color);
+    color: #fff;
+}
+
+.view-modes {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+}
+
+.view-mode-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: #999;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.view-mode-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+
+.view-mode-btn.active {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #fff;
+}
+
+.editor-panels {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.editor-pane, .preview-pane {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+}
+
+.editor-pane {
+    border-right: 1px solid var(--border-color);
+}
+
+.CodeMirror {
+    height: 100% !important;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    background: var(--editor-bg);
+}
+
+.CodeMirror-gutters {
+    background: var(--editor-bg);
+    border-right: 1px solid var(--border-color);
+}
+
+.CodeMirror-linenumber { color: #555; }
+.CodeMirror-cursor { border-left: 2px solid var(--accent-color); }
+.CodeMirror-selected { background: rgba(108, 92, 231, 0.3) !important; }
+.CodeMirror-activeline-background { background: rgba(255,255,255,0.03); }
+
+.preview-pane {
+    background: var(--preview-bg);
+    padding: 24px 32px;
+    color: var(--editor-text);
+}
+
+.preview-content {
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.8;
+}
+
+.preview-content h1, .preview-content h2, .preview-content h3,
+.preview-content h4, .preview-content h5, .preview-content h6 {
+    color: #fff;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+}
+
+.preview-content h1 { font-size: 2em; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; }
+.preview-content h2 { font-size: 1.5em; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; }
+.preview-content h3 { font-size: 1.25em; }
+.preview-content p { margin: 1em 0; }
+.preview-content a { color: var(--accent-color); text-decoration: none; }
+.preview-content a:hover { text-decoration: underline; }
+
+.preview-content code {
+    background: rgba(255,255,255,0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+}
+
+.preview-content pre {
+    background: #1e1e1e;
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 1em 0;
+}
+
+.preview-content pre code { background: none; padding: 0; }
+
+.preview-content blockquote {
+    border-left: 4px solid var(--accent-color);
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    background: rgba(108, 92, 231, 0.1);
+    border-radius: 0 8px 8px 0;
+}
+
+.preview-content ul, .preview-content ol { padding-left: 2em; margin: 1em 0; }
+.preview-content li { margin: 0.5em 0; }
+
+.preview-content table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+.preview-content th, .preview-content td { border: 1px solid var(--border-color); padding: 8px 12px; text-align: left; }
+.preview-content th { background: rgba(255,255,255,0.05); }
+.preview-content img { max-width: 100%; border-radius: 8px; margin: 1em 0; }
+.preview-content hr { border: none; border-top: 1px solid var(--border-color); margin: 2em 0; }
+
+.editor-statusbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 12px;
+    background: var(--toolbar-bg);
+    border-top: 1px solid var(--border-color);
+    font-size: 12px;
+    color: #888;
+}
+
+.status-item { display: flex; align-items: center; gap: 4px; }
+
+.settings-panel {
+    background: #2d2d2d;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.settings-panel .card-header {
+    background: var(--toolbar-bg);
+    border-bottom: 1px solid var(--border-color);
+    color: #fff;
+    font-weight: 500;
+}
+
+.settings-panel .card-body { background: #2d2d2d; }
+.settings-panel .form-label { color: #ccc; font-size: 13px; font-weight: 500; }
+
+.settings-panel .form-control {
+    background: #1e1e1e;
+    border: 1px solid var(--border-color);
+    color: #fff;
+}
+
+.settings-panel .form-control:focus {
+    background: #1e1e1e;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.2);
+    color: #fff;
+}
+
+.settings-panel .form-control::placeholder { color: #666; }
+.settings-panel .text-muted { color: #666 !important; }
+
+.pane-resizer {
+    width: 4px;
+    background: var(--border-color);
+    cursor: col-resize;
+    transition: background 0.2s;
+}
+
+.pane-resizer:hover { background: var(--accent-color); }
+
+.editor-container.mode-editor .preview-pane,
+.editor-container.mode-editor .pane-resizer { display: none; }
+.editor-container.mode-editor .editor-pane { border-right: none; }
+.editor-container.mode-preview .editor-pane,
+.editor-container.mode-preview .pane-resizer { display: none; }
+
+.shortcuts-table { width: 100%; }
+.shortcuts-table td { padding: 8px; border-bottom: 1px solid var(--border-color); }
+.shortcuts-table kbd { background: #333; padding: 4px 8px; border-radius: 4px; font-family: monospace; color: #fff; }
+
+.toc-sidebar {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    width: 200px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+}
+
+.toc-sidebar.visible { display: block; }
+.toc-sidebar h6 { color: #888; margin-bottom: 8px; font-size: 11px; text-transform: uppercase; }
+.toc-sidebar a { display: block; color: #aaa; text-decoration: none; padding: 4px 0; padding-left: calc(var(--level, 0) * 12px); }
+.toc-sidebar a:hover { color: var(--accent-color); }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.saving { animation: pulse 1s infinite; }
+
+@media (max-width: 992px) {
+    .editor-container { height: calc(100vh - 100px); }
+    .editor-panels { flex-direction: column; }
+    .editor-pane { border-right: none; border-bottom: 1px solid var(--border-color); }
+    .pane-resizer { display: none; }
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>
-        <i class="bi bi-{{ 'pencil' if post else 'plus-circle' }} me-2"></i>
-        {{ 'Edit Post' if post else 'New Post' }}
-    </h2>
-    <a href="{{ admin_url('/posts') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i> Back to Posts
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">
+        <i class="bi bi-pencil-square me-2"></i>{{ 'Edit Post' if post else 'New Post' }}
+    </h4>
+    <a href="{{ admin_url('/posts') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back
     </a>
 </div>
 
 <form method="POST" action="{{ admin_url('/posts/edit/' + post.filename) if post else admin_url('/posts/new') }}" id="postForm">
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <i class="bi bi-file-text me-2"></i>Content
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label">Title <span class="text-danger">*</span></label>
-                        <input type="text" name="title" class="form-control form-control-lg" 
-                               value="{{ post.title if post else '' }}" required 
-                               placeholder="Enter post title...">
+    <div class="row g-3">
+        <div class="col-lg-9">
+            <div class="mb-3">
+                <input type="text" name="title" class="form-control form-control-lg" 
+                       value="{{ post.title if post else '' }}" required 
+                       placeholder="Post Title..." id="postTitle"
+                       style="background: #2d2d2d; border: 1px solid #3c3c3c; color: #fff; font-weight: 600;">
+            </div>
+            
+            <div class="editor-container mode-split" id="editorContainer">
+                <div class="editor-toolbar">
+                    <div class="toolbar-group">
+                        <button type="button" class="toolbar-btn" onclick="insertFormat('bold')" title="Bold (Ctrl+B)">
+                            <i class="bi bi-type-bold"></i>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="insertFormat('italic')" title="Italic (Ctrl+I)">
+                            <i class="bi bi-type-italic"></i>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="insertFormat('strikethrough')" title="Strikethrough">
+                            <i class="bi bi-type-strikethrough"></i>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="insertFormat('code')" title="Inline Code">
+                            <i class="bi bi-code"></i>
+                        </button>
                     </div>
                     
-                    <div class="mb-3">
-                        <label class="form-label">Content (Markdown)</label>
-                        <textarea name="content" id="content" class="form-control" rows="20">{{ post.content if post else '' }}</textarea>
+                    <div class="toolbar-group">
+                        <button type="button" class="toolbar-btn" onclick="insertFormat('h1')" title="Heading 1">
+                            <strong>H1</strong>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="insertFormat('h2')" title="Heading 2">
+                            <strong>H2</strong>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="insertFormat('h3')" title="Heading 3">
+                            <strong>H3</strong>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button type="button" class="toolbar-btn" onclick="insertFormat('ul')" title="Bullet List">
+                            <i class="bi bi-list-ul"></i>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="insertFormat('ol')" title="Numbered List">
+                            <i class="bi bi-list-ol"></i>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="insertFormat('task')" title="Task List">
+                            <i class="bi bi-check2-square"></i>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="insertFormat('quote')" title="Quote">
+                            <i class="bi bi-quote"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button type="button" class="toolbar-btn" onclick="insertFormat('link')" title="Link (Ctrl+K)">
+                            <i class="bi bi-link-45deg"></i>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="insertFormat('image')" title="Image">
+                            <i class="bi bi-image"></i>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="insertFormat('table')" title="Table">
+                            <i class="bi bi-table"></i>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="insertFormat('codeblock')" title="Code Block">
+                            <i class="bi bi-file-code"></i>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="insertFormat('hr')" title="Horizontal Rule">
+                            <i class="bi bi-dash-lg"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button type="button" class="toolbar-btn" onclick="editor.undo()" title="Undo">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="editor.redo()" title="Redo">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button type="button" class="toolbar-btn" onclick="toggleTOC()" title="Table of Contents">
+                            <i class="bi bi-list-nested"></i>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="showShortcuts()" title="Keyboard Shortcuts">
+                            <i class="bi bi-keyboard"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="view-modes">
+                        <button type="button" class="view-mode-btn" onclick="setViewMode('editor', this)" title="Editor Only">
+                            <i class="bi bi-code-slash"></i>
+                        </button>
+                        <button type="button" class="view-mode-btn active" onclick="setViewMode('split', this)" title="Split View">
+                            <i class="bi bi-layout-split"></i>
+                        </button>
+                        <button type="button" class="view-mode-btn" onclick="setViewMode('preview', this)" title="Preview Only">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button type="button" class="view-mode-btn" onclick="toggleFullscreen()" title="Fullscreen">
+                            <i class="bi bi-fullscreen"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="editor-panels">
+                    <div class="editor-pane">
+                        <textarea name="content" id="content">{{ post.content if post else '' }}</textarea>
+                    </div>
+                    <div class="pane-resizer" id="paneResizer"></div>
+                    <div class="preview-pane">
+                        <div class="preview-content" id="previewContent">
+                            <p style="color: #666; text-align: center; padding-top: 100px;">
+                                <i class="bi bi-pencil" style="font-size: 48px;"></i><br>
+                                Start typing to see preview...
+                            </p>
+                        </div>
+                        <div class="toc-sidebar" id="tocSidebar">
+                            <h6>Contents</h6>
+                            <div id="tocContent"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="editor-statusbar">
+                    <div class="status-item">
+                        <i class="bi bi-file-text"></i>
+                        <span id="wordCount">0 words</span>
+                        <span class="mx-2">|</span>
+                        <span id="charCount">0 chars</span>
+                        <span class="mx-2">|</span>
+                        <span id="lineCount">0 lines</span>
+                    </div>
+                    <div class="status-item">
+                        <span id="cursorPosition">Ln 1, Col 1</span>
+                        <span class="mx-2">|</span>
+                        <span>Markdown</span>
+                        <span class="mx-2">|</span>
+                        <span id="saveStatus">Ready</span>
                     </div>
                 </div>
             </div>
         </div>
         
-        <div class="col-lg-4">
-            <div class="card mb-4">
+        <div class="col-lg-3">
+            <div class="settings-panel card mb-3">
                 <div class="card-header">
                     <i class="bi bi-gear me-2"></i>Settings
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
                         <label class="form-label">Slug (URL)</label>
-                        <input type="text" name="slug" class="form-control" 
+                        <input type="text" name="slug" class="form-control form-control-sm" 
                                value="{{ post.filename[:-3] if post else '' }}"
                                placeholder="auto-generated-from-title"
                                {% if post %}readonly{% endif %}>
-                        <small class="text-muted">Leave empty to auto-generate from title</small>
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Description</label>
-                        <textarea name="description" class="form-control" rows="3" 
-                                  placeholder="Brief description for SEO...">{{ post.description if post else '' }}</textarea>
+                        <textarea name="description" class="form-control form-control-sm" rows="2" 
+                                  placeholder="SEO description...">{{ post.description if post else '' }}</textarea>
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Tags</label>
-                        <input type="text" name="tags" class="form-control" 
+                        <input type="text" name="tags" class="form-control form-control-sm" 
                                value="{{ post.tags if post else '' }}"
                                placeholder="tag1, tag2, tag3">
-                        <small class="text-muted">Comma-separated</small>
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Categories</label>
-                        <input type="text" name="categories" class="form-control" 
+                        <input type="text" name="categories" class="form-control form-control-sm" 
                                value="{{ post.categories if post else '' }}"
                                placeholder="category1, category2">
-                        <small class="text-muted">Comma-separated</small>
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Featured Image</label>
-                        <div class="input-group">
+                        <div class="input-group input-group-sm">
                             <input type="text" name="image" id="imageUrl" class="form-control" 
                                    value="{{ post.image if post else '' }}"
                                    placeholder="/uploads/image.jpg">
@@ -86,75 +493,67 @@
                             </button>
                         </div>
                         <div id="imagePreview" class="mt-2" style="display: none;">
-                            <img id="previewImg" src="" alt="Preview" style="max-width: 100%; max-height: 150px; border-radius: 8px;">
+                            <img id="previewImg" src="" alt="Preview" style="max-width: 100%; max-height: 100px; border-radius: 8px;">
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="draft" id="draft"
-                                   {% if post and post.draft %}checked{% endif %}>
-                            <label class="form-check-label" for="draft">Save as Draft</label>
-                        </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="draft" id="draft"
+                               {% if post and post.draft %}checked{% endif %}>
+                        <label class="form-check-label" for="draft">Save as Draft</label>
                     </div>
                 </div>
             </div>
             
-            <div class="card mb-4">
+            <div class="settings-panel card">
                 <div class="card-header">
-                    <i class="bi bi-save me-2"></i>Actions
+                    <i class="bi bi-check2-circle me-2"></i>Actions
                 </div>
                 <div class="card-body">
                     <button type="submit" class="btn btn-primary w-100 mb-2">
                         <i class="bi bi-check-lg me-1"></i> {{ 'Update Post' if post else 'Create Post' }}
                     </button>
-                    <button type="button" class="btn btn-outline-secondary w-100" onclick="previewPost()">
-                        <i class="bi bi-eye me-1"></i> Preview
+                    <button type="button" class="btn btn-outline-secondary w-100" onclick="previewInNewTab()">
+                        <i class="bi bi-box-arrow-up-right me-1"></i> Preview
                     </button>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <i class="bi bi-markdown me-2"></i>Markdown Help
-                </div>
-                <div class="card-body">
-                    <small class="text-muted">
-                        <code># Heading 1</code><br>
-                        <code>## Heading 2</code><br>
-                        <code>**bold**</code> / <code>*italic*</code><br>
-                        <code>[link](url)</code><br>
-                        <code>![image](url)</code><br>
-                        <code>`code`</code><br>
-                        <code>```language</code> for code blocks<br>
-                        <code>- list item</code><br>
-                        <code>1. numbered item</code><br>
-                        <code>> blockquote</code>
-                    </small>
                 </div>
             </div>
         </div>
     </div>
 </form>
 
-<!-- Image Upload Modal -->
-<div class="modal fade" id="uploadModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-cloud-upload me-2"></i>Upload Image</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- Modals -->
+<div class="modal fade" id="imagePickerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background: #2d2d2d; color: #fff;">
+            <div class="modal-header" style="border-color: #3c3c3c;">
+                <h5 class="modal-title"><i class="bi bi-images me-2"></i>Select Image</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div id="dropZone" class="border border-2 border-dashed rounded p-4 text-center"
-                     style="cursor: pointer;">
-                    <i class="bi bi-cloud-upload display-4 text-muted"></i>
-                    <p class="mt-2 mb-0">Drag & drop or click to upload</p>
-                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                <div class="row g-2" id="imageGallery">Loading...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background: #2d2d2d; color: #fff;">
+            <div class="modal-header" style="border-color: #3c3c3c;">
+                <h5 class="modal-title"><i class="bi bi-upload me-2"></i>Upload Image</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="dropZone" class="border border-2 border-dashed rounded p-5 text-center" 
+                     style="cursor: pointer; border-color: #3c3c3c !important;">
+                    <i class="bi bi-cloud-upload" style="font-size: 48px; color: #666;"></i>
+                    <p class="mt-2 mb-0 text-muted">Drop image here or click to upload</p>
                 </div>
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
                 <div id="uploadProgress" class="mt-3" style="display: none;">
-                    <div class="progress">
-                        <div class="progress-bar" style="width: 0%"></div>
+                    <div class="progress" style="background: #1e1e1e;">
+                        <div class="progress-bar bg-primary" style="width: 0%"></div>
                     </div>
                 </div>
                 <div id="uploadResult" class="mt-3"></div>
@@ -163,36 +562,23 @@
     </div>
 </div>
 
-<!-- Image Picker Modal -->
-<div class="modal fade" id="imagePickerModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-images me-2"></i>Select Image</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<div class="modal fade" id="shortcutsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background: #2d2d2d; color: #fff;">
+            <div class="modal-header" style="border-color: #3c3c3c;">
+                <h5 class="modal-title"><i class="bi bi-keyboard me-2"></i>Keyboard Shortcuts</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div id="imageGallery" class="row g-2">
-                    <div class="text-center py-4">
-                        <div class="spinner-border" role="status"></div>
-                        <p class="mt-2">Loading images...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Preview Modal -->
-<div class="modal fade" id="previewModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Preview</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div id="previewContent" class="prose"></div>
+                <table class="shortcuts-table">
+                    <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd></td><td>Bold</td></tr>
+                    <tr><td><kbd>Ctrl</kbd>+<kbd>I</kbd></td><td>Italic</td></tr>
+                    <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>Link</td></tr>
+                    <tr><td><kbd>Ctrl</kbd>+<kbd>Q</kbd></td><td>Quote</td></tr>
+                    <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Save</td></tr>
+                    <tr><td><kbd>Ctrl</kbd>+<kbd>1-6</kbd></td><td>Headings</td></tr>
+                    <tr><td><kbd>F11</kbd></td><td>Fullscreen</td></tr>
+                </table>
             </div>
         </div>
     </div>
@@ -200,73 +586,221 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/gfm/gfm.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/continuelist.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/display/placeholder.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
 <script>
-// Initialize EasyMDE Markdown Editor
-var easyMDE = new EasyMDE({
-    element: document.getElementById('content'),
-    spellChecker: false,
-    autosave: {
-        enabled: true,
-        uniqueId: "post-{{ post.filename if post else 'new' }}",
-        delay: 1000,
+var editor = CodeMirror.fromTextArea(document.getElementById('content'), {
+    mode: 'gfm',
+    theme: 'dracula',
+    lineNumbers: true,
+    lineWrapping: true,
+    extraKeys: {
+        "Enter": "newlineAndIndentContinueMarkdownList",
+        "Ctrl-B": function() { insertFormat('bold'); },
+        "Ctrl-I": function() { insertFormat('italic'); },
+        "Ctrl-K": function() { insertFormat('link'); },
+        "Ctrl-Q": function() { insertFormat('quote'); },
+        "Ctrl-S": function() { document.getElementById('postForm').submit(); },
+        "Ctrl-1": function() { insertFormat('h1'); },
+        "Ctrl-2": function() { insertFormat('h2'); },
+        "Ctrl-3": function() { insertFormat('h3'); },
+        "F11": function() { toggleFullscreen(); }
     },
-    toolbar: [
-        "bold", "italic", "heading", "|",
-        "quote", "unordered-list", "ordered-list", "|",
-        "link", "image", "code", "|",
-        "preview", "side-by-side", "fullscreen", "|",
-        "guide"
-    ],
     placeholder: "Write your post content in Markdown...",
-    minHeight: "400px",
+    styleActiveLine: true
 });
 
-function previewPost() {
-    var content = easyMDE.value();
-    fetch('{{ admin_url("/preview") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({content: content})
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('previewContent').innerHTML = data.html;
-        new bootstrap.Modal(document.getElementById('previewModal')).show();
+marked.setOptions({
+    highlight: function(code, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+            return hljs.highlight(code, { language: lang }).value;
+        }
+        return hljs.highlightAuto(code).value;
+    },
+    breaks: true,
+    gfm: true
+});
+
+var updateTimeout;
+editor.on('change', function() {
+    clearTimeout(updateTimeout);
+    updateTimeout = setTimeout(updatePreview, 150);
+    updateStats();
+    document.getElementById('saveStatus').textContent = 'Unsaved';
+});
+
+editor.on('cursorActivity', function() {
+    var cursor = editor.getCursor();
+    document.getElementById('cursorPosition').textContent = 'Ln ' + (cursor.line + 1) + ', Col ' + (cursor.ch + 1);
+});
+
+function updatePreview() {
+    var content = editor.getValue();
+    document.getElementById('previewContent').innerHTML = marked.parse(content);
+    document.querySelectorAll('#previewContent pre code').forEach(function(block) {
+        hljs.highlightElement(block);
     });
+    updateTOC(content);
 }
 
-// Auto-generate slug from title
-document.querySelector('input[name="title"]').addEventListener('blur', function() {
+function updateStats() {
+    var content = editor.getValue();
+    var words = content.trim() ? content.trim().split(/\s+/).length : 0;
+    document.getElementById('wordCount').textContent = words + ' words';
+    document.getElementById('charCount').textContent = content.length + ' chars';
+    document.getElementById('lineCount').textContent = editor.lineCount() + ' lines';
+}
+
+function updateTOC(content) {
+    var headings = content.match(/^#{1,6}\s+.+$/gm) || [];
+    var tocContent = document.getElementById('tocContent');
+    if (headings.length === 0) {
+        tocContent.innerHTML = '<span style="color: #666;">No headings</span>';
+        return;
+    }
+    tocContent.innerHTML = headings.map(function(h) {
+        var level = h.match(/^#+/)[0].length;
+        var text = h.replace(/^#+\s+/, '');
+        return '<a href="javascript:void(0)" style="--level: ' + (level - 1) + ';" onclick="scrollToHeading(\'' + text.replace(/'/g, "\\'") + '\')">' + text + '</a>';
+    }).join('');
+}
+
+function scrollToHeading(text) {
+    var lines = editor.getValue().split('\n');
+    for (var i = 0; i < lines.length; i++) {
+        if (lines[i].match(/^#+\s+/) && lines[i].includes(text)) {
+            editor.setCursor(i, 0);
+            editor.scrollIntoView({line: i, ch: 0}, 100);
+            editor.focus();
+            break;
+        }
+    }
+}
+
+function insertFormat(type) {
+    var selection = editor.getSelection();
+    var cursor = editor.getCursor();
+    var line = editor.getLine(cursor.line);
+    
+    var formats = {
+        'bold': { before: '**', after: '**', placeholder: 'bold text' },
+        'italic': { before: '*', after: '*', placeholder: 'italic text' },
+        'strikethrough': { before: '~~', after: '~~', placeholder: 'strikethrough' },
+        'code': { before: '`', after: '`', placeholder: 'code' },
+        'h1': { before: '# ', after: '', placeholder: 'Heading 1', line: true },
+        'h2': { before: '## ', after: '', placeholder: 'Heading 2', line: true },
+        'h3': { before: '### ', after: '', placeholder: 'Heading 3', line: true },
+        'ul': { before: '- ', after: '', placeholder: 'List item', line: true },
+        'ol': { before: '1. ', after: '', placeholder: 'List item', line: true },
+        'task': { before: '- [ ] ', after: '', placeholder: 'Task item', line: true },
+        'quote': { before: '> ', after: '', placeholder: 'Quote', line: true },
+        'hr': { before: '\n---\n', after: '', placeholder: '' },
+        'link': { before: '[', after: '](url)', placeholder: 'link text' },
+        'image': { before: '![', after: '](image-url)', placeholder: 'alt text' },
+        'codeblock': { before: '```\n', after: '\n```', placeholder: 'code here' },
+        'table': { before: '| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |\n', after: '', placeholder: '' }
+    };
+    
+    var format = formats[type];
+    if (!format) return;
+    
+    if (format.line) {
+        var newLine = format.before + (selection || format.placeholder);
+        editor.replaceRange(newLine, {line: cursor.line, ch: 0}, {line: cursor.line, ch: line.length});
+    } else {
+        if (selection) {
+            editor.replaceSelection(format.before + selection + format.after);
+        } else {
+            var text = format.before + format.placeholder + format.after;
+            editor.replaceSelection(text);
+            var newCursor = editor.getCursor();
+            editor.setSelection(
+                {line: newCursor.line, ch: newCursor.ch - format.after.length - format.placeholder.length},
+                {line: newCursor.line, ch: newCursor.ch - format.after.length}
+            );
+        }
+    }
+    editor.focus();
+}
+
+function setViewMode(mode, btn) {
+    document.getElementById('editorContainer').className = 'editor-container mode-' + mode;
+    document.querySelectorAll('.view-mode-btn').forEach(function(b) { b.classList.remove('active'); });
+    if (btn) btn.classList.add('active');
+    if (mode !== 'editor') updatePreview();
+    editor.refresh();
+}
+
+function toggleFullscreen() {
+    var container = document.getElementById('editorContainer');
+    if (document.fullscreenElement) {
+        document.exitFullscreen();
+    } else {
+        container.requestFullscreen();
+    }
+}
+
+function toggleTOC() {
+    document.getElementById('tocSidebar').classList.toggle('visible');
+}
+
+function showShortcuts() {
+    new bootstrap.Modal(document.getElementById('shortcutsModal')).show();
+}
+
+function previewInNewTab() {
+    var content = editor.getValue();
+    var html = marked.parse(content);
+    var title = document.getElementById('postTitle').value || 'Preview';
+    var w = window.open('', '_blank');
+    w.document.write('<!DOCTYPE html><html><head><title>' + title + '</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:800px;margin:40px auto;padding:20px;line-height:1.8;}pre{background:#f6f8fa;padding:16px;border-radius:6px;overflow-x:auto;}code{background:#f6f8fa;padding:2px 6px;border-radius:3px;}pre code{background:none;padding:0;}blockquote{border-left:4px solid #ddd;margin:1em 0;padding:0.5em 1em;color:#666;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ddd;padding:8px 12px;}th{background:#f6f8fa;}</style></head><body><h1>' + title + '</h1>' + html + '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><\/script><script>hljs.highlightAll();<\/script></body></html>');
+    w.document.close();
+}
+
+// Pane resizer
+var resizer = document.getElementById('paneResizer');
+var editorPane = document.querySelector('.editor-pane');
+var previewPane = document.querySelector('.preview-pane');
+var isResizing = false;
+
+resizer.addEventListener('mousedown', function() { isResizing = true; document.body.style.cursor = 'col-resize'; });
+document.addEventListener('mousemove', function(e) {
+    if (!isResizing) return;
+    var container = document.querySelector('.editor-panels');
+    var rect = container.getBoundingClientRect();
+    var pct = ((e.clientX - rect.left) / rect.width) * 100;
+    if (pct > 20 && pct < 80) {
+        editorPane.style.flex = pct + ' 0 0';
+        previewPane.style.flex = (100 - pct) + ' 0 0';
+    }
+});
+document.addEventListener('mouseup', function() { isResizing = false; document.body.style.cursor = ''; editor.refresh(); });
+
+// Auto-generate slug
+document.getElementById('postTitle').addEventListener('blur', function() {
     var slugInput = document.querySelector('input[name="slug"]');
     if (!slugInput.readOnly && !slugInput.value) {
-        slugInput.value = this.value.toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-|-$/g, '');
+        slugInput.value = this.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     }
 });
 
-// Image URL preview
+// Image handling
 var imageUrlInput = document.getElementById('imageUrl');
 var imagePreview = document.getElementById('imagePreview');
 var previewImg = document.getElementById('previewImg');
 
-if (imageUrlInput.value) {
-    previewImg.src = imageUrlInput.value;
-    imagePreview.style.display = 'block';
-}
-
+if (imageUrlInput.value) { previewImg.src = imageUrlInput.value; imagePreview.style.display = 'block'; }
 imageUrlInput.addEventListener('input', function() {
-    if (this.value) {
-        previewImg.src = this.value;
-        imagePreview.style.display = 'block';
-    } else {
-        imagePreview.style.display = 'none';
-    }
+    if (this.value) { previewImg.src = this.value; imagePreview.style.display = 'block'; }
+    else { imagePreview.style.display = 'none'; }
 });
 
-// Upload Modal
 var uploadModal;
 function openUploadModal() {
     uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'));
@@ -275,81 +809,52 @@ function openUploadModal() {
 
 var dropZone = document.getElementById('dropZone');
 var fileInput = document.getElementById('fileInput');
-
-dropZone.addEventListener('click', () => fileInput.click());
-dropZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone.classList.add('border-primary');
-});
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-primary'));
-dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('border-primary');
-    uploadFile(e.dataTransfer.files[0]);
-});
-fileInput.addEventListener('change', () => uploadFile(fileInput.files[0]));
+dropZone.addEventListener('click', function() { fileInput.click(); });
+dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.style.borderColor = '#6c5ce7'; });
+dropZone.addEventListener('dragleave', function() { dropZone.style.borderColor = '#3c3c3c'; });
+dropZone.addEventListener('drop', function(e) { e.preventDefault(); dropZone.style.borderColor = '#3c3c3c'; uploadFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', function() { uploadFile(fileInput.files[0]); });
 
 function uploadFile(file) {
     if (!file) return;
-    
     var formData = new FormData();
     formData.append('file', file);
-    
     document.getElementById('uploadProgress').style.display = 'block';
     document.querySelector('#uploadProgress .progress-bar').style.width = '50%';
     
-    fetch('{{ admin_url("/upload") }}', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
+    fetch('{{ admin_url("/upload") }}', { method: 'POST', body: formData })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
         document.querySelector('#uploadProgress .progress-bar').style.width = '100%';
         if (data.success) {
-            document.getElementById('uploadResult').innerHTML = 
-                '<div class="alert alert-success">Uploaded! URL: <code>' + data.url + '</code></div>';
+            document.getElementById('uploadResult').innerHTML = '<div class="alert alert-success">Uploaded: <code>' + data.url + '</code></div>';
             imageUrlInput.value = data.url;
             previewImg.src = data.url;
             imagePreview.style.display = 'block';
-            setTimeout(() => uploadModal.hide(), 1500);
+            setTimeout(function() { uploadModal.hide(); }, 1500);
         } else {
-            document.getElementById('uploadResult').innerHTML = 
-                '<div class="alert alert-danger">' + data.error + '</div>';
+            document.getElementById('uploadResult').innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
         }
-    })
-    .catch(error => {
-        document.getElementById('uploadResult').innerHTML = 
-            '<div class="alert alert-danger">Upload failed</div>';
     });
 }
 
-// Image Picker
 function openImagePicker() {
-    var modal = new bootstrap.Modal(document.getElementById('imagePickerModal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('imagePickerModal')).show();
     loadImageGallery();
 }
 
 function loadImageGallery() {
-    // Fetch images from server (we'll create a simple endpoint)
     fetch('{{ admin_url("/api/images") }}')
-    .then(response => response.json())
-    .then(data => {
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
         var gallery = document.getElementById('imageGallery');
         if (data.images && data.images.length > 0) {
-            gallery.innerHTML = data.images.map(img => 
-                '<div class="col-4 col-md-3">' +
-                '<div class="card" style="cursor: pointer;" onclick="selectImage(\'' + img.url + '\')">' +
-                '<img src="' + img.url + '" class="card-img-top" style="height: 80px; object-fit: cover;">' +
-                '</div></div>'
-            ).join('');
+            gallery.innerHTML = data.images.map(function(img) {
+                return '<div class="col-4 col-md-3"><div class="card" style="cursor:pointer;background:#1e1e1e;border-color:#3c3c3c;" onclick="selectImage(\'' + img.url + '\')"><img src="' + img.url + '" class="card-img-top" style="height:80px;object-fit:cover;"></div></div>';
+            }).join('');
         } else {
-            gallery.innerHTML = '<div class="col-12 text-center py-4 text-muted">No images uploaded yet</div>';
+            gallery.innerHTML = '<div class="col-12 text-center py-4 text-muted">No images</div>';
         }
-    })
-    .catch(() => {
-        document.getElementById('imageGallery').innerHTML = 
-            '<div class="col-12 text-center py-4 text-muted">Failed to load images</div>';
     });
 }
 
@@ -359,5 +864,35 @@ function selectImage(url) {
     imagePreview.style.display = 'block';
     bootstrap.Modal.getInstance(document.getElementById('imagePickerModal')).hide();
 }
+
+// Paste image from clipboard
+editor.getWrapperElement().addEventListener('paste', function(e) {
+    var items = e.clipboardData.items;
+    for (var i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+            e.preventDefault();
+            var file = items[i].getAsFile();
+            var formData = new FormData();
+            formData.append('file', file);
+            document.getElementById('saveStatus').textContent = 'Uploading...';
+            fetch('{{ admin_url("/upload") }}', { method: 'POST', body: formData })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    editor.replaceSelection('![image](' + data.url + ')');
+                    document.getElementById('saveStatus').textContent = 'Uploaded';
+                }
+            });
+            break;
+        }
+    }
+});
+
+// Init
+window.addEventListener('load', function() {
+    updatePreview();
+    updateStats();
+    editor.refresh();
+});
 </script>
 {% endblock %}
