@@ -526,12 +526,7 @@ def get_announcement():
 
 def save_announcement(title, text, icon='📢'):
     """Save announcement to custom partial"""
-    template = '''{{/* 
-  自定义内容 - 公告栏
-  文件位置: layouts/_partials/content/custom_1.html
-  可通过管理面板编辑
-*/}}
-<div class="bg-primary/10 border-primary/30 rounded-xl border p-6 shadow-sm mb-6">
+    template = '''<div class="bg-primary/10 border-primary/30 rounded-xl border p-6 shadow-sm mb-6">
   <div class="flex items-start gap-3">
     <div class="text-primary text-2xl flex-shrink-0">
       {icon}
