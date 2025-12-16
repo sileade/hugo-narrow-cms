@@ -461,6 +461,7 @@
                     <span class="status-item" id="lineCount">0 lines</span>
                 </div>
                 <div class="status-group">
+                    <span class="status-item" id="autoSaveStatus"><i class="bi bi-cloud-check"></i> Ready</span>
                     <span class="status-item" id="cursorPos">Ln 1, Col 0</span>
                 </div>
             </div>
@@ -839,11 +840,134 @@ editor.getWrapperElement().addEventListener('paste', function(e) {
     }
 });
 
+// Auto-save functionality
+var autoSaveInterval = null;
+var lastSavedContent = '';
+var currentFilename = '{{ post.filename if post else "" }}';
+var hasUnsavedChanges = false;
+
+function getPostData() {
+    return {
+        title: document.getElementById('postTitle').value,
+        content: editor.getValue(),
+        slug: document.querySelector('input[name="slug"]').value,
+        description: document.querySelector('textarea[name="description"]').value,
+        tags: document.querySelector('input[name="tags"]').value,
+        categories: document.querySelector('input[name="categories"]').value,
+        image: document.getElementById('imageUrl').value,
+        filename: currentFilename || null
+    };
+}
+
+function autoSave() {
+    var data = getPostData();
+    
+    // Don't save if no title
+    if (!data.title.trim()) {
+        return;
+    }
+    
+    // Check if content changed
+    var currentContent = JSON.stringify(data);
+    if (currentContent === lastSavedContent) {
+        return;
+    }
+    
+    // Update status
+    var statusEl = document.getElementById('autoSaveStatus');
+    statusEl.innerHTML = '<i class="bi bi-cloud-arrow-up"></i> Saving...';
+    statusEl.style.color = '#f59e0b';
+    
+    fetch('{{ admin_url("/posts/autosave") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(response) {
+        if (response.success) {
+            lastSavedContent = currentContent;
+            hasUnsavedChanges = false;
+            if (response.filename && !currentFilename) {
+                currentFilename = response.filename;
+            }
+            statusEl.innerHTML = '<i class="bi bi-cloud-check"></i> Saved ' + response.timestamp;
+            statusEl.style.color = '#10b981';
+        } else {
+            statusEl.innerHTML = '<i class="bi bi-cloud-slash"></i> Save failed';
+            statusEl.style.color = '#ef4444';
+        }
+    })
+    .catch(function(err) {
+        statusEl.innerHTML = '<i class="bi bi-cloud-slash"></i> Save failed';
+        statusEl.style.color = '#ef4444';
+    });
+}
+
+// Also save to localStorage as backup
+function saveToLocalStorage() {
+    var data = getPostData();
+    if (data.title || data.content) {
+        localStorage.setItem('draft_' + (currentFilename || 'new'), JSON.stringify(data));
+    }
+}
+
+// Restore from localStorage if available
+function restoreFromLocalStorage() {
+    var key = 'draft_' + (currentFilename || 'new');
+    var saved = localStorage.getItem(key);
+    if (saved && !editor.getValue().trim()) {
+        try {
+            var data = JSON.parse(saved);
+            if (data.content && confirm('Found unsaved draft. Restore it?')) {
+                if (data.title) document.getElementById('postTitle').value = data.title;
+                if (data.content) editor.setValue(data.content);
+                if (data.description) document.querySelector('textarea[name="description"]').value = data.description;
+                if (data.tags) document.querySelector('input[name="tags"]').value = data.tags;
+                if (data.categories) document.querySelector('input[name="categories"]').value = data.categories;
+                if (data.image) document.getElementById('imageUrl').value = data.image;
+                updatePreview();
+                updateStats();
+            }
+        } catch(e) {}
+    }
+}
+
+// Track changes
+editor.on('change', function() {
+    hasUnsavedChanges = true;
+    saveToLocalStorage();
+});
+
+document.getElementById('postTitle').addEventListener('input', function() {
+    hasUnsavedChanges = true;
+    saveToLocalStorage();
+});
+
+// Warn before leaving with unsaved changes
+window.addEventListener('beforeunload', function(e) {
+    if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
+
+// Clear localStorage on successful form submit
+document.getElementById('postForm').addEventListener('submit', function() {
+    hasUnsavedChanges = false;
+    localStorage.removeItem('draft_' + (currentFilename || 'new'));
+});
+
+// Start auto-save interval (every 30 seconds)
+autoSaveInterval = setInterval(autoSave, 30000);
+
 // Initialize
 window.addEventListener('load', function() {
     updatePreview();
     updateStats();
     editor.refresh();
+    restoreFromLocalStorage();
+    lastSavedContent = JSON.stringify(getPostData());
 });
 </script>
 {% endblock %}

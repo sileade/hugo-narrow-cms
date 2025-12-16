@@ -378,6 +378,63 @@ def delete_post(filename):
     
     return redirect(admin_url('/posts'))
 
+@app.route('/posts/autosave', methods=['POST'])
+@login_required
+def autosave_post():
+    """Auto-save draft to localStorage backup and optionally to file"""
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'error': 'No data provided'})
+    
+    title = data.get('title', '').strip()
+    content = data.get('content', '')
+    slug = data.get('slug', '').strip()
+    filename = data.get('filename')  # For existing posts
+    
+    if not title:
+        return jsonify({'success': False, 'error': 'Title is required'})
+    
+    # Generate slug if not provided
+    if not slug:
+        slug = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
+    
+    # Build front matter
+    front_matter = {
+        'title': title,
+        'date': data.get('date', datetime.now().strftime('%Y-%m-%dT%H:%M:%S+03:00')),
+        'draft': True,  # Auto-saved posts are always drafts
+    }
+    
+    if data.get('description'):
+        front_matter['description'] = data['description']
+    if data.get('tags'):
+        front_matter['tags'] = [t.strip() for t in data['tags'].split(',') if t.strip()]
+    if data.get('categories'):
+        front_matter['categories'] = [c.strip() for c in data['categories'].split(',') if c.strip()]
+    if data.get('image'):
+        front_matter['image'] = data['image']
+    
+    # Create markdown content
+    md_content = '---\n' + yaml.dump(front_matter, allow_unicode=True, default_flow_style=False) + '---\n\n' + content
+    
+    # Determine filename
+    if filename:
+        file_path = POSTS_DIR / filename
+    else:
+        file_path = POSTS_DIR / f'{slug}.md'
+    
+    # Save to file
+    try:
+        file_path.write_text(md_content, encoding='utf-8')
+        return jsonify({
+            'success': True, 
+            'message': 'Draft auto-saved',
+            'filename': file_path.name,
+            'timestamp': datetime.now().strftime('%H:%M:%S')
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 # Allowed image extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'ico'}
 
