@@ -191,16 +191,54 @@
     border-color: #9ca3af;
 }
 
-/* Image preview */
-.image-preview {
-    margin-top: 8px;
+/* Featured Image Box */
+.featured-image-box {
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 12px;
+    background: #f9fafb;
 }
 
-.image-preview img {
-    max-width: 100%;
-    max-height: 100px;
+.image-preview-large {
+    width: 100%;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
     border-radius: 6px;
-    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.image-preview-large img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.image-preview-large .no-image {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+.image-preview-large .no-image i {
+    font-size: 32px;
+    margin-bottom: 4px;
+}
+
+.image-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.image-actions .btn {
+    font-size: 11px;
+    padding: 4px 8px;
 }
 
 /* Status indicator */
@@ -293,16 +331,30 @@
                     
                     <div class="mb-3">
                         <label class="form-label">Featured Image</label>
-                        <div class="input-group">
-                            <input type="text" name="image" id="imageUrl" class="form-control" 
-                                   value="{{ post.image if post else '' }}"
-                                   placeholder="/uploads/image.jpg">
-                            <button type="button" class="btn btn-outline-secondary" onclick="openImagePicker()">
-                                <i class="bi bi-folder2-open"></i>
-                            </button>
-                        </div>
-                        <div class="image-preview" id="imagePreview" style="display: none;">
-                            <img id="previewImg" src="" alt="Preview">
+                        <div class="featured-image-box">
+                            <div class="image-preview-large" id="imagePreview">
+                                <img id="previewImg" src="{{ post.image if post else '' }}" alt="Preview" style="display: {{ 'block' if post and post.image else 'none' }};">
+                                <div class="no-image" id="noImagePlaceholder" style="display: {{ 'none' if post and post.image else 'flex' }};">
+                                    <i class="bi bi-image"></i>
+                                    <span>No image selected</span>
+                                </div>
+                            </div>
+                            <div class="image-actions">
+                                <input type="hidden" name="image" id="imageUrl" value="{{ post.image if post else '' }}">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="openImageUpload()">
+                                    <i class="bi bi-upload me-1"></i> Upload
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="openImagePicker()">
+                                    <i class="bi bi-folder2-open me-1"></i> Gallery
+                                </button>
+                                <button type="button" class="btn btn-outline-info btn-sm" onclick="extractFirstImage()" title="Use first image from post content">
+                                    <i class="bi bi-magic me-1"></i> Auto
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearFeaturedImage()" id="clearImageBtn" style="display: {{ 'inline-block' if post and post.image else 'none' }};">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                            <div class="form-text mt-1">Upload, select from gallery, or auto-extract from post</div>
                         </div>
                     </div>
                     
@@ -389,22 +441,70 @@ function previewInNewTab() {
 
 // Image handling
 var imageUrlInput = document.getElementById('imageUrl');
-var imagePreview = document.getElementById('imagePreview');
 var previewImg = document.getElementById('previewImg');
+var noImagePlaceholder = document.getElementById('noImagePlaceholder');
+var clearImageBtn = document.getElementById('clearImageBtn');
 
-if (imageUrlInput.value) {
-    previewImg.src = imageUrlInput.value;
-    imagePreview.style.display = 'block';
+function updateImagePreview(url) {
+    if (url) {
+        previewImg.src = url;
+        previewImg.style.display = 'block';
+        noImagePlaceholder.style.display = 'none';
+        clearImageBtn.style.display = 'inline-block';
+        imageUrlInput.value = url;
+    } else {
+        previewImg.style.display = 'none';
+        noImagePlaceholder.style.display = 'flex';
+        clearImageBtn.style.display = 'none';
+        imageUrlInput.value = '';
+    }
 }
 
-imageUrlInput.addEventListener('input', function() {
-    if (this.value) {
-        previewImg.src = this.value;
-        imagePreview.style.display = 'block';
-    } else {
-        imagePreview.style.display = 'none';
+function clearFeaturedImage() {
+    updateImagePreview('');
+}
+
+function openImageUpload() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        var formData = new FormData();
+        formData.append('file', file);
+        fetch('{{ admin_url("/upload") }}', { method: 'POST', body: formData })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                updateImagePreview(data.url);
+            } else {
+                alert('Upload failed: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(function(err) {
+            alert('Upload failed: ' + err.message);
+        });
+    };
+    input.click();
+}
+
+function extractFirstImage() {
+    var content = easyMDE.value();
+    // Match markdown images: ![alt](url)
+    var mdMatch = content.match(/!\[[^\]]*\]\(([^)]+)\)/);
+    if (mdMatch && mdMatch[1]) {
+        updateImagePreview(mdMatch[1]);
+        return;
     }
-});
+    // Match HTML images: <img src="url">
+    var htmlMatch = content.match(/<img[^>]+src=["']([^"']+)["']/);
+    if (htmlMatch && htmlMatch[1]) {
+        updateImagePreview(htmlMatch[1]);
+        return;
+    }
+    alert('No images found in post content');
+}
 
 function openImagePicker() {
     new bootstrap.Modal(document.getElementById('imagePickerModal')).show();
@@ -427,9 +527,7 @@ function loadImageGallery() {
 }
 
 function selectImage(url) {
-    imageUrlInput.value = url;
-    previewImg.src = url;
-    imagePreview.style.display = 'block';
+    updateImagePreview(url);
     bootstrap.Modal.getInstance(document.getElementById('imagePickerModal')).hide();
 }
 

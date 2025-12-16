@@ -42,6 +42,7 @@
 
 {{/* 如果没有提供coverImage，按优先级处理图片 */}}
 {{- if not $coverImage -}}
+  {{/* 1. 首先检查 cover 参数 */}}
   {{- if $page.Params.cover -}}
     {{- partial "content/image-processor.html" (dict
       "context" $page
@@ -50,7 +51,41 @@
       "outputType" "data"
     ) -}}
     {{- $coverImage = $page.Scratch.Get "imageUrl" -}}
-  {{- else if $randomPlaceholder -}}
+  {{/* 2. 然后检查 image 参数 (用于admin面板) */}}
+  {{- else if $page.Params.image -}}
+    {{- partial "content/image-processor.html" (dict
+      "context" $page
+      "src" $page.Params.image
+      "enablePlaceholder" true
+      "outputType" "data"
+    ) -}}
+    {{- $coverImage = $page.Scratch.Get "imageUrl" -}}
+  {{/* 3. 自动提取文章内容中的第一张图片 */}}
+  {{- else -}}
+    {{- $content := $page.RawContent -}}
+    {{/* 匹配 Markdown 图片语法: ![alt](url) */}}
+    {{- $mdImageRegex := `!\[[^\]]*\]\(([^)]+)\)` -}}
+    {{- $mdMatch := findRE $mdImageRegex $content 1 -}}
+    {{- if $mdMatch -}}
+      {{- $firstMatch := index $mdMatch 0 -}}
+      {{/* 提取URL部分 */}}
+      {{- $urlMatch := findRE `\(([^)]+)\)` $firstMatch 1 -}}
+      {{- if $urlMatch -}}
+        {{- $extractedUrl := index $urlMatch 0 -}}
+        {{- $extractedUrl = strings.TrimPrefix "(" $extractedUrl -}}
+        {{- $extractedUrl = strings.TrimSuffix ")" $extractedUrl -}}
+        {{- partial "content/image-processor.html" (dict
+          "context" $page
+          "src" $extractedUrl
+          "enablePlaceholder" true
+          "outputType" "data"
+        ) -}}
+        {{- $coverImage = $page.Scratch.Get "imageUrl" -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{/* 4. 如果仍然没有图片，使用随机占位图 */}}
+  {{- if and (not $coverImage) $randomPlaceholder -}}
     {{- partial "content/image-processor.html" (dict
       "context" $page
       "src" $randomPlaceholder
