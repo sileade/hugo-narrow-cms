@@ -2,11 +2,14 @@
 Hugo Admin Panel - Content Management System
 Full-featured CMS for managing Hugo blog posts with Markdown editor
 Configured to work behind Traefik with /admin prefix
+Includes automatic Hugo site rebuild after content changes
 """
 import os
 import re
 import yaml
 import markdown
+import subprocess
+import threading
 from pathlib import Path
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
@@ -23,9 +26,12 @@ app.config['APPLICATION_ROOT'] = '/admin'
 app.config['PREFERRED_URL_SCHEME'] = 'https'
 
 # Configuration
-CONTENT_DIR = Path(os.environ.get('GIT_REPO_PATH', '/app/content'))
+# Paths configured for Docker volume mount: entire repo at /app
+HUGO_ROOT = Path('/app')  # Root of Hugo site (where hugo.yaml is)
+CONTENT_DIR = HUGO_ROOT / 'content'
 POSTS_DIR = CONTENT_DIR / 'posts'
-UPLOAD_DIR = Path('/app/static/uploads')
+UPLOAD_DIR = HUGO_ROOT / 'static' / 'uploads'
+PUBLIC_DIR = HUGO_ROOT / 'public'
 
 # Ensure directories exist
 POSTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -70,11 +76,47 @@ def inject_admin_url():
     """Make admin_url available in templates"""
     return dict(admin_url=admin_url)
 
+def rebuild_hugo_site():
+    """Rebuild Hugo site after content changes"""
+    try:
+        print(f"[Hugo] Starting site rebuild...")
+        os.chdir(HUGO_ROOT)
+        
+        # Run Hugo to rebuild the site
+        result = subprocess.run(
+            ['hugo', '--minify', '--gc'],
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        
+        if result.returncode == 0:
+            print(f"[Hugo] Site rebuilt successfully!")
+            print(f"[Hugo] Output: {result.stdout}")
+            return True, "Site rebuilt successfully"
+        else:
+            print(f"[Hugo] Build failed: {result.stderr}")
+            return False, result.stderr
+    except subprocess.TimeoutExpired:
+        print("[Hugo] Build timeout")
+        return False, "Build timeout"
+    except FileNotFoundError:
+        print("[Hugo] Hugo not found, skipping rebuild")
+        return False, "Hugo not installed"
+    except Exception as e:
+        print(f"[Hugo] Rebuild error: {e}")
+        return False, str(e)
+
+def rebuild_hugo_async():
+    """Rebuild Hugo site in background thread"""
+    thread = threading.Thread(target=rebuild_hugo_site)
+    thread.daemon = True
+    thread.start()
+
 def git_commit(message):
     """Commit changes to git"""
     try:
-        import subprocess
-        os.chdir(CONTENT_DIR.parent)
+        os.chdir(HUGO_ROOT)
         subprocess.run(['git', 'add', '.'], check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', message], check=True, capture_output=True)
         return True
@@ -272,7 +314,9 @@ def new_post():
         
         if save_post(filename, data):
             git_commit(f"Add new post: {title}")
-            flash(f'Post "{title}" created successfully!', 'success')
+            # Rebuild Hugo site after creating post
+            rebuild_hugo_async()
+            flash(f'Post "{title}" created successfully! Site is rebuilding...', 'success')
             return redirect(admin_url('/posts'))
         else:
             flash('Error creating post', 'error')
@@ -301,7 +345,9 @@ def edit_post(filename):
         
         if save_post(filename, data):
             git_commit(f"Update post: {data['title']}")
-            flash(f'Post "{data["title"]}" updated successfully!', 'success')
+            # Rebuild Hugo site after editing post
+            rebuild_hugo_async()
+            flash(f'Post "{data["title"]}" updated successfully! Site is rebuilding...', 'success')
             return redirect(admin_url('/posts'))
         else:
             flash('Error updating post', 'error')
@@ -322,7 +368,9 @@ def delete_post(filename):
         post = get_post(filename)
         file_path.unlink()
         git_commit(f"Delete post: {post['title'] if post else filename}")
-        flash('Post deleted successfully!', 'success')
+        # Rebuild Hugo site after deleting post
+        rebuild_hugo_async()
+        flash('Post deleted successfully! Site is rebuilding...', 'success')
     else:
         flash('Post not found', 'error')
     
@@ -358,6 +406,17 @@ def preview():
     content = request.json.get('content', '')
     html = markdown.markdown(content, extensions=['extra', 'codehilite', 'tables', 'toc'])
     return jsonify({'html': html})
+
+@app.route('/rebuild', methods=['POST'])
+@login_required
+def rebuild():
+    """Manually trigger Hugo site rebuild"""
+    success, message = rebuild_hugo_site()
+    if success:
+        flash('Site rebuilt successfully!', 'success')
+    else:
+        flash(f'Rebuild failed: {message}', 'error')
+    return redirect(admin_url('/'))
 
 @app.route('/health')
 def health():
