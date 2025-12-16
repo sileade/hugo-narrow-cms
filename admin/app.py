@@ -19,8 +19,10 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 
 # Configuration
-CONTENT_DIR = Path(os.environ.get('GIT_REPO_PATH', '/app/content'))
-STATIC_DIR = Path(os.environ.get('STATIC_DIR', '/app/static'))
+# Get base directory (parent of admin folder)
+BASE_DIR = Path(__file__).parent.parent
+CONTENT_DIR = Path(os.environ.get('GIT_REPO_PATH', str(BASE_DIR / 'content')))
+STATIC_DIR = Path(os.environ.get('STATIC_DIR', str(BASE_DIR / 'static')))
 POSTS_DIR = CONTENT_DIR / 'posts'
 PAGES_DIR = CONTENT_DIR / 'pages'
 UPLOAD_DIR = STATIC_DIR / 'uploads'
