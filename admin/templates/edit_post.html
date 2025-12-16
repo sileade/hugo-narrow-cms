@@ -1,59 +1,193 @@
 {% extends "base.html" %}
-{% block title %}{% if post %}Edit{% else %}New{% endif %} Post - Hugo Admin{% endblock %}
+{% block title %}{{ 'Edit' if post else 'New' }} Post - Hugo CMS{% endblock %}
+
 {% block content %}
-<h1 class="mb-4">{% if post %}Edit{% else %}New{% endif %} Post</h1>
-<form method="POST">
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-{{ 'pencil' if post else 'plus-circle' }} me-2"></i>
+        {{ 'Edit Post' if post else 'New Post' }}
+    </h2>
+    <a href="{{ admin_url('/posts') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Posts
+    </a>
+</div>
+
+<form method="POST" action="{{ admin_url('/posts/edit/' + post.filename) if post else admin_url('/posts/new') }}" id="postForm">
     <div class="row">
-        <div class="col-md-8">
-            <div class="mb-3">
-                <label class="form-label">Title</label>
-                <input type="text" name="title" class="form-control" value="{{ post.title if post else '' }}" required>
-            </div>
-            {% if not post %}
-            <div class="mb-3">
-                <label class="form-label">Slug (URL)</label>
-                <input type="text" name="slug" class="form-control" placeholder="leave-empty-for-auto">
-            </div>
-            {% endif %}
-            <div class="mb-3">
-                <label class="form-label">Content (Markdown)</label>
-                <textarea name="content" class="form-control" rows="20" style="font-family: monospace;">{{ post.content if post else '' }}</textarea>
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-file-text me-2"></i>Content
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Title <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control form-control-lg" 
+                               value="{{ post.title if post else '' }}" required 
+                               placeholder="Enter post title...">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Content (Markdown)</label>
+                        <textarea name="content" id="content" class="form-control" rows="20">{{ post.content if post else '' }}</textarea>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card mb-3">
-                <div class="card-header">Publish</div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-gear me-2"></i>Settings
+                </div>
                 <div class="card-body">
-                    <div class="form-check mb-3">
-                        <input type="checkbox" name="draft" class="form-check-input" id="draft" 
-                               {% if post and post.draft %}checked{% endif %}>
-                        <label class="form-check-label" for="draft">Save as draft</label>
+                    <div class="mb-3">
+                        <label class="form-label">Slug (URL)</label>
+                        <input type="text" name="slug" class="form-control" 
+                               value="{{ post.filename[:-3] if post else '' }}"
+                               placeholder="auto-generated-from-title"
+                               {% if post %}readonly{% endif %}>
+                        <small class="text-muted">Leave empty to auto-generate from title</small>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-save"></i> Save Post
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3" 
+                                  placeholder="Brief description for SEO...">{{ post.description if post else '' }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tags</label>
+                        <input type="text" name="tags" class="form-control" 
+                               value="{{ post.tags if post else '' }}"
+                               placeholder="tag1, tag2, tag3">
+                        <small class="text-muted">Comma-separated</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Categories</label>
+                        <input type="text" name="categories" class="form-control" 
+                               value="{{ post.categories if post else '' }}"
+                               placeholder="category1, category2">
+                        <small class="text-muted">Comma-separated</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Featured Image URL</label>
+                        <input type="text" name="image" class="form-control" 
+                               value="{{ post.image if post else '' }}"
+                               placeholder="/images/featured.jpg">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="draft" id="draft"
+                                   {% if post and post.draft %}checked{% endif %}>
+                            <label class="form-check-label" for="draft">Save as Draft</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-save me-2"></i>Actions
+                </div>
+                <div class="card-body">
+                    <button type="submit" class="btn btn-primary w-100 mb-2">
+                        <i class="bi bi-check-lg me-1"></i> {{ 'Update Post' if post else 'Create Post' }}
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary w-100" onclick="previewPost()">
+                        <i class="bi bi-eye me-1"></i> Preview
                     </button>
                 </div>
             </div>
-            <div class="card mb-3">
-                <div class="card-header">Metadata</div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-markdown me-2"></i>Markdown Help
+                </div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea name="description" class="form-control" rows="3">{{ post.description if post else '' }}</textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Tags (comma-separated)</label>
-                        <input type="text" name="tags" class="form-control" 
-                               value="{{ post.tags|join(', ') if post and post.tags else '' }}">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Categories (comma-separated)</label>
-                        <input type="text" name="categories" class="form-control" 
-                               value="{{ post.categories|join(', ') if post and post.categories else '' }}">
-                    </div>
+                    <small class="text-muted">
+                        <code># Heading 1</code><br>
+                        <code>## Heading 2</code><br>
+                        <code>**bold**</code> / <code>*italic*</code><br>
+                        <code>[link](url)</code><br>
+                        <code>![image](url)</code><br>
+                        <code>`code`</code><br>
+                        <code>```language</code> for code blocks<br>
+                        <code>- list item</code><br>
+                        <code>1. numbered item</code><br>
+                        <code>> blockquote</code>
+                    </small>
                 </div>
             </div>
         </div>
     </div>
 </form>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="previewContent" class="prose"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize EasyMDE Markdown Editor
+var easyMDE = new EasyMDE({
+    element: document.getElementById('content'),
+    spellChecker: false,
+    autosave: {
+        enabled: true,
+        uniqueId: "post-{{ post.filename if post else 'new' }}",
+        delay: 1000,
+    },
+    toolbar: [
+        "bold", "italic", "heading", "|",
+        "quote", "unordered-list", "ordered-list", "|",
+        "link", "image", "code", "|",
+        "preview", "side-by-side", "fullscreen", "|",
+        "guide"
+    ],
+    placeholder: "Write your post content in Markdown...",
+    minHeight: "400px",
+});
+
+function previewPost() {
+    var content = easyMDE.value();
+    fetch('{{ admin_url("/preview") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({content: content})
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('previewContent').innerHTML = data.html;
+        new bootstrap.Modal(document.getElementById('previewModal')).show();
+    });
+}
+
+// Auto-generate slug from title
+document.querySelector('input[name="title"]').addEventListener('blur', function() {
+    var slugInput = document.querySelector('input[name="slug"]');
+    if (!slugInput.readOnly && !slugInput.value) {
+        slugInput.value = this.value.toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '');
+    }
+});
+</script>
 {% endblock %}

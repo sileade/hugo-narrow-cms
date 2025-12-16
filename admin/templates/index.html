@@ -1,43 +1,94 @@
 {% extends "base.html" %}
-{% block title %}Dashboard - Hugo Admin{% endblock %}
+{% block title %}Dashboard - Hugo CMS{% endblock %}
+
 {% block content %}
-<h1 class="mb-4">Dashboard</h1>
-<div class="row">
-    <div class="col-md-4">
-        <div class="card text-white bg-primary mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Total Posts</h5>
-                <h2>{{ stats.total_posts }}</h2>
-            </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-speedometer2 me-2"></i>Dashboard</h2>
+    <a href="{{ admin_url('/posts/new') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> New Post
+    </a>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h3>{{ stats.total_posts }}</h3>
+            <p><i class="bi bi-file-earmark-text me-1"></i> Total Posts</p>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-success mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Published</h5>
-                <h2>{{ stats.published }}</h2>
-            </div>
+    <div class="col-md-3">
+        <div class="stat-card green">
+            <h3>{{ stats.published }}</h3>
+            <p><i class="bi bi-check-circle me-1"></i> Published</p>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-warning mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Drafts</h5>
-                <h2>{{ stats.drafts }}</h2>
-            </div>
+    <div class="col-md-3">
+        <div class="stat-card orange">
+            <h3>{{ stats.drafts }}</h3>
+            <p><i class="bi bi-pencil me-1"></i> Drafts</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card blue">
+            <h3>{{ stats.total_words }}</h3>
+            <p><i class="bi bi-type me-1"></i> Total Words</p>
         </div>
     </div>
 </div>
-<h3 class="mt-4">Recent Posts</h3>
-<div class="list-group">
-    {% for post in recent_posts %}
-    <a href="{{ url_for('edit_post', filename=post.filename) }}" class="list-group-item list-group-item-action">
-        <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">{{ post.title }}</h5>
-            <small>{{ post.date.strftime('%Y-%m-%d') }}</small>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock-history me-2"></i>Recent Posts</span>
+        <a href="{{ admin_url('/posts') }}" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    <div class="card-body p-0">
+        {% if recent_posts %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in recent_posts %}
+                    <tr>
+                        <td>
+                            <strong>{{ post.title }}</strong>
+                            {% if post.description %}
+                            <br><small class="text-muted">{{ post.description[:60] }}{% if post.description|length > 60 %}...{% endif %}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if post.draft %}
+                            <span class="badge badge-draft">Draft</span>
+                            {% else %}
+                            <span class="badge badge-published">Published</span>
+                            {% endif %}
+                        </td>
+                        <td><small>{{ post.date if post.date else 'N/A' }}</small></td>
+                        <td>
+                            <a href="{{ admin_url('/posts/edit/' + post.filename) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-        {% if post.draft %}<span class="badge bg-warning">Draft</span>{% endif %}
-    </a>
-    {% endfor %}
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+            <p class="text-muted mt-2">No posts yet. Create your first post!</p>
+            <a href="{{ admin_url('/posts/new') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i> Create Post
+            </a>
+        </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}
