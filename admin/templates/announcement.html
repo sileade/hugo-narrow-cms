@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Announcement - Hugo Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">📢 Site Announcement</h1>
+            <p class="text-gray-600 mt-2">Manage the announcement block displayed on your homepage</p>
+        </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-700 mb-4">Preview</h2>
+        <div id="preview-container" class="bg-gray-900 rounded-xl p-6">
+            <div class="bg-blue-500/10 border-blue-500/30 rounded-xl border p-6 shadow-sm">
+                <div class="flex items-start gap-3">
+                    <div class="text-blue-400 text-2xl flex-shrink-0" id="preview-icon">
+                        {{ announcement.icon or '📢' }}
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-white font-semibold mb-2" id="preview-title">{{ announcement.title or '网站公告' }}</h3>
+                        <p class="text-gray-300 text-sm leading-relaxed" id="preview-text">
+                            {{ announcement.text or 'Your announcement text will appear here...' }}
+                        </p>
+                        <p class="text-gray-500 text-xs mt-3">
+                            {{ current_date }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-lg font-semibold text-gray-700 mb-4">Edit Announcement</h2>
+        
+        <form method="POST" action="{{ admin_url('/announcement') }}">
+            <div class="space-y-6">
+                <!-- Icon Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Icon</label>
+                    <div class="flex items-center gap-4">
+                        <input type="text" name="icon" id="icon-input" 
+                               value="{{ announcement.icon or '📢' }}"
+                               class="w-20 text-center text-2xl px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               maxlength="4">
+                        <div class="flex gap-2">
+                            {% for emoji in ['📢', '🔔', '⚡', '🎉', '💡', '🚀', '⭐', '🔥', '💬', '📌'] %}
+                            <button type="button" onclick="selectIcon('{{ emoji }}')"
+                                    class="text-2xl p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                                {{ emoji }}
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <div>
+                    <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                    <input type="text" name="title" id="title-input"
+                           value="{{ announcement.title or '网站公告' }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Announcement title">
+                </div>
+
+                <!-- Text -->
+                <div>
+                    <label for="text" class="block text-sm font-medium text-gray-700 mb-2">Announcement Text</label>
+                    <textarea name="text" id="text-input" rows="4"
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Enter your announcement or thought here...">{{ announcement.text or '' }}</textarea>
+                    <p class="text-sm text-gray-500 mt-1">This text will be displayed in the announcement block on your homepage.</p>
+                </div>
+
+                <!-- Submit -->
+                <div class="flex justify-end gap-4">
+                    <a href="{{ admin_url('/') }}" 
+                       class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        💾 Save Announcement
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tips -->
+    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 class="font-semibold text-blue-800 mb-2">💡 Tips</h3>
+        <ul class="text-sm text-blue-700 space-y-1">
+            <li>• The announcement will be displayed on your homepage after saving</li>
+            <li>• Use this for short thoughts, updates, or important notices</li>
+            <li>• The date is automatically set to today's date</li>
+            <li>• Changes take effect immediately after the site rebuilds (~5-10 seconds)</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+// Live preview
+document.getElementById('icon-input').addEventListener('input', updatePreview);
+document.getElementById('title-input').addEventListener('input', updatePreview);
+document.getElementById('text-input').addEventListener('input', updatePreview);
+
+function updatePreview() {
+    document.getElementById('preview-icon').textContent = document.getElementById('icon-input').value || '📢';
+    document.getElementById('preview-title').textContent = document.getElementById('title-input').value || '网站公告';
+    document.getElementById('preview-text').textContent = document.getElementById('text-input').value || 'Your announcement text will appear here...';
+}
+
+function selectIcon(emoji) {
+    document.getElementById('icon-input').value = emoji;
+    updatePreview();
+}
+</script>
+{% endblock %}

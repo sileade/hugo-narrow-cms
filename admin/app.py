@@ -32,10 +32,12 @@ CONTENT_DIR = HUGO_ROOT / 'content'
 POSTS_DIR = CONTENT_DIR / 'posts'
 UPLOAD_DIR = HUGO_ROOT / 'static' / 'uploads'
 PUBLIC_DIR = HUGO_ROOT / 'public'
+CUSTOM_PARTIAL_DIR = HUGO_ROOT / 'layouts' / '_partials' / 'content'
 
 # Ensure directories exist
 POSTS_DIR.mkdir(parents=True, exist_ok=True)
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+CUSTOM_PARTIAL_DIR.mkdir(parents=True, exist_ok=True)
 
 # Flask-Login setup
 login_manager = LoginManager()
@@ -73,8 +75,8 @@ def admin_url(path):
 
 @app.context_processor
 def inject_admin_url():
-    """Make admin_url available in templates"""
-    return dict(admin_url=admin_url)
+    """Make admin_url and current_date available in templates"""
+    return dict(admin_url=admin_url, current_date=datetime.now().strftime('%Y-%m-%d'))
 
 def rebuild_hugo_site():
     """Rebuild Hugo site after content changes"""
@@ -497,6 +499,84 @@ def api_images():
 def health():
     """Health check endpoint"""
     return jsonify({'status': 'ok', 'timestamp': datetime.now().isoformat()})
+
+# Announcement/Notice Management
+ANNOUNCEMENT_FILE = CUSTOM_PARTIAL_DIR / 'custom_1.html'
+
+def get_announcement():
+    """Get current announcement content"""
+    if ANNOUNCEMENT_FILE.exists():
+        try:
+            content = ANNOUNCEMENT_FILE.read_text(encoding='utf-8')
+            # Parse the announcement content
+            import re
+            title_match = re.search(r'<h3[^>]*>([^<]+)</h3>', content)
+            text_match = re.search(r'<p class="text-foreground/80[^>]*>([^<]+)</p>', content)
+            icon_match = re.search(r'<div class="text-primary text-2xl[^>]*>\s*([^<\s]+)', content)
+            
+            return {
+                'title': title_match.group(1) if title_match else '网站公告',
+                'text': text_match.group(1).strip() if text_match else '',
+                'icon': icon_match.group(1).strip() if icon_match else '📢',
+                'enabled': True
+            }
+        except Exception as e:
+            print(f"Error reading announcement: {e}")
+    return {'title': '网站公告', 'text': '', 'icon': '📢', 'enabled': False}
+
+def save_announcement(title, text, icon='📢'):
+    """Save announcement to custom partial"""
+    template = '''{{/* 
+  自定义内容 - 公告栏
+  文件位置: layouts/_partials/content/custom_1.html
+  可通过管理面板编辑
+*/}}
+<div class="bg-primary/10 border-primary/30 rounded-xl border p-6 shadow-sm mb-6">
+  <div class="flex items-start gap-3">
+    <div class="text-primary text-2xl flex-shrink-0">
+      {icon}
+    </div>
+    <div class="flex-1">
+      <h3 class="text-foreground font-semibold mb-2">{title}</h3>
+      <p class="text-foreground/80 text-sm leading-relaxed">
+        {text}
+      </p>
+      <p class="text-muted-foreground text-xs mt-3">
+        {{{{ now.Format "2006-01-02" }}}}
+      </p>
+    </div>
+  </div>
+</div>
+'''
+    try:
+        content = template.format(title=title, text=text, icon=icon)
+        ANNOUNCEMENT_FILE.write_text(content, encoding='utf-8')
+        return True
+    except Exception as e:
+        print(f"Error saving announcement: {e}")
+        return False
+
+@app.route('/announcement', methods=['GET', 'POST'])
+@login_required
+def announcement():
+    """Manage site announcement/notice"""
+    if request.method == 'POST':
+        title = request.form.get('title', '网站公告').strip()
+        text = request.form.get('text', '').strip()
+        icon = request.form.get('icon', '📢').strip()
+        
+        if not text:
+            flash('Announcement text is required', 'error')
+        elif save_announcement(title, text, icon):
+            git_commit(f"Update announcement: {title}")
+            rebuild_hugo_async()
+            flash('Announcement updated successfully! Site is rebuilding...', 'success')
+            return redirect(admin_url('/announcement'))
+        else:
+            flash('Error saving announcement', 'error')
+    
+    current = get_announcement()
+    return render_template('announcement.html', announcement=current)
 
 # Override Flask-Login unauthorized handler to use admin prefix
 @login_manager.unauthorized_handler
