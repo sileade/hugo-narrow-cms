@@ -16,6 +16,8 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+import requests
+import json
 
 # Create Flask app with /admin prefix
 app = Flask(__name__)
@@ -33,6 +35,11 @@ POSTS_DIR = CONTENT_DIR / 'posts'
 UPLOAD_DIR = HUGO_ROOT / 'static' / 'uploads'
 PUBLIC_DIR = HUGO_ROOT / 'public'
 CUSTOM_PARTIAL_DIR = HUGO_ROOT / 'layouts' / '_partials' / 'content'
+
+# Telegram Bot Configuration
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '8350357441:AAHvxCDGGW1BTuUTyQX5d3-oMY5xC1nmluo')
+TELEGRAM_CHANNEL_ID = os.environ.get('TELEGRAM_CHANNEL_ID', '@nodkeys_i')
+SITE_URL = os.environ.get('SITE_URL', 'https://nodkeys.com')
 
 # Ensure directories exist
 POSTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -125,6 +132,58 @@ def git_commit(message):
     except Exception as e:
         print(f"Git commit failed: {e}")
         return False
+
+def send_to_telegram(title, slug, description='', image=''):
+    """
+    Send post notification to Telegram channel (like @opennet_ru style)
+    Format: **Title** URL (with link preview)
+    """
+    try:
+        post_url = f"{SITE_URL}/posts/{slug}/"
+        
+        # Format message like opennet_ru: Title + URL
+        # Telegram will auto-generate link preview
+        message = f"<b>{title}</b>\n\n{post_url}"
+        
+        # If description exists, add it
+        if description:
+            # Truncate description to ~200 chars
+            desc = description[:200] + '...' if len(description) > 200 else description
+            message = f"<b>{title}</b>\n\n{desc}\n\n{post_url}"
+        
+        # Telegram Bot API endpoint
+        api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        
+        payload = {
+            'chat_id': TELEGRAM_CHANNEL_ID,
+            'text': message,
+            'parse_mode': 'HTML',
+            'disable_web_page_preview': False  # Enable link preview
+        }
+        
+        response = requests.post(api_url, json=payload, timeout=10)
+        result = response.json()
+        
+        if result.get('ok'):
+            print(f"[Telegram] Post sent successfully: {title}")
+            return True, "Message sent to Telegram"
+        else:
+            error = result.get('description', 'Unknown error')
+            print(f"[Telegram] Failed to send: {error}")
+            return False, error
+            
+    except requests.exceptions.Timeout:
+        print("[Telegram] Request timeout")
+        return False, "Telegram request timeout"
+    except Exception as e:
+        print(f"[Telegram] Error: {e}")
+        return False, str(e)
+
+def send_to_telegram_async(title, slug, description='', image=''):
+    """Send to Telegram in background thread"""
+    thread = threading.Thread(target=send_to_telegram, args=(title, slug, description, image))
+    thread.daemon = True
+    thread.start()
 
 def parse_frontmatter(content):
     """Parse YAML frontmatter from markdown file"""
@@ -318,7 +377,13 @@ def new_post():
             git_commit(f"Add new post: {title}")
             # Rebuild Hugo site after creating post
             rebuild_hugo_async()
-            flash(f'Post "{title}" created successfully! Site is rebuilding...', 'success')
+            
+            # Send to Telegram if not a draft
+            if not data['draft']:
+                send_to_telegram_async(title, slug, data.get('description', ''), data.get('image', ''))
+                flash(f'Post "{title}" created and sent to Telegram! Site is rebuilding...', 'success')
+            else:
+                flash(f'Post "{title}" saved as draft! Site is rebuilding...', 'success')
             return redirect(admin_url('/posts'))
         else:
             flash('Error creating post', 'error')
@@ -329,6 +394,10 @@ def new_post():
 @login_required
 def edit_post(filename):
     """Edit existing post"""
+    # Get current post state to check if it was a draft
+    old_post = get_post(filename)
+    was_draft = old_post.get('draft', False) if old_post else False
+    
     if request.method == 'POST':
         data = {
             'title': request.form.get('title', '').strip(),
@@ -349,7 +418,14 @@ def edit_post(filename):
             git_commit(f"Update post: {data['title']}")
             # Rebuild Hugo site after editing post
             rebuild_hugo_async()
-            flash(f'Post "{data["title"]}" updated successfully! Site is rebuilding...', 'success')
+            
+            # Send to Telegram if post is being published (was draft, now not draft)
+            slug = filename[:-3]  # Remove .md extension
+            if was_draft and not data['draft']:
+                send_to_telegram_async(data['title'], slug, data.get('description', ''), data.get('image', ''))
+                flash(f'Post "{data["title"]}" published and sent to Telegram! Site is rebuilding...', 'success')
+            else:
+                flash(f'Post "{data["title"]}" updated successfully! Site is rebuilding...', 'success')
             return redirect(admin_url('/posts'))
         else:
             flash('Error updating post', 'error')
