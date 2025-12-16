@@ -151,6 +151,11 @@
                     <i class="bi bi-plus-circle"></i> New Post
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'images' %}active{% endif %}" href="{{ admin_url('/images') }}">
+                    <i class="bi bi-images"></i> Images
+                </a>
+            </li>
             <li class="nav-item mt-3">
                 <a class="nav-link" href="/" target="_blank">
                     <i class="bi bi-box-arrow-up-right"></i> View Site

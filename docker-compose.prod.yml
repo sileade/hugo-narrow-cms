@@ -8,6 +8,7 @@ services:
     restart: unless-stopped
     command:
       - "--api.dashboard=true"
+      - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
@@ -49,9 +50,10 @@ services:
     restart: unless-stopped
     volumes:
       - ./public:/usr/share/nginx/html:ro
+      - ./static/uploads:/usr/share/nginx/html/uploads:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.hugo.rule=Host(`${DOMAIN}`) || Host(`www.${DOMAIN}`)"
+      - "traefik.http.routers.hugo.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.hugo.entrypoints=websecure"
       - "traefik.http.routers.hugo.tls.certresolver=letsencrypt"
       - "traefik.http.services.hugo.loadbalancer.server.port=80"
@@ -77,12 +79,14 @@ services:
       - GIT_USER_NAME=${GIT_USER_NAME}
       - GIT_USER_EMAIL=${GIT_USER_EMAIL}
     volumes:
-      - ./content:/app/content
-      - ./static:/app/static
-      - ./admin/db:/app/db
+      - .:/app
+      - ./admin/db:/app/admin/db
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.admin.rule=Host(`${DOMAIN}`) && PathPrefix(`/admin`)"
+      - "traefik.http.routers.admin.priority=100"
+      - "traefik.http.middlewares.admin-strip.stripprefix.prefixes=/admin"
+      - "traefik.http.routers.admin.middlewares=admin-strip"
       - "traefik.http.routers.admin.entrypoints=websecure"
       - "traefik.http.routers.admin.tls.certresolver=letsencrypt"
       - "traefik.http.services.admin.loadbalancer.server.port=5000"

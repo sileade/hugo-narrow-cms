@@ -73,10 +73,21 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">Featured Image URL</label>
-                        <input type="text" name="image" class="form-control" 
-                               value="{{ post.image if post else '' }}"
-                               placeholder="/images/featured.jpg">
+                        <label class="form-label">Featured Image</label>
+                        <div class="input-group">
+                            <input type="text" name="image" id="imageUrl" class="form-control" 
+                                   value="{{ post.image if post else '' }}"
+                                   placeholder="/uploads/image.jpg">
+                            <button type="button" class="btn btn-outline-secondary" onclick="openImagePicker()">
+                                <i class="bi bi-images"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" onclick="openUploadModal()">
+                                <i class="bi bi-upload"></i>
+                            </button>
+                        </div>
+                        <div id="imagePreview" class="mt-2" style="display: none;">
+                            <img id="previewImg" src="" alt="Preview" style="max-width: 100%; max-height: 150px; border-radius: 8px;">
+                        </div>
                     </div>
                     
                     <div class="mb-3">
@@ -125,6 +136,52 @@
         </div>
     </div>
 </form>
+
+<!-- Image Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-cloud-upload me-2"></i>Upload Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="dropZone" class="border border-2 border-dashed rounded p-4 text-center"
+                     style="cursor: pointer;">
+                    <i class="bi bi-cloud-upload display-4 text-muted"></i>
+                    <p class="mt-2 mb-0">Drag & drop or click to upload</p>
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                </div>
+                <div id="uploadProgress" class="mt-3" style="display: none;">
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div id="uploadResult" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Picker Modal -->
+<div class="modal fade" id="imagePickerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-images me-2"></i>Select Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="imageGallery" class="row g-2">
+                    <div class="text-center py-4">
+                        <div class="spinner-border" role="status"></div>
+                        <p class="mt-2">Loading images...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Preview Modal -->
 <div class="modal fade" id="previewModal" tabindex="-1">
@@ -189,5 +246,118 @@ document.querySelector('input[name="title"]').addEventListener('blur', function(
             .replace(/^-|-$/g, '');
     }
 });
+
+// Image URL preview
+var imageUrlInput = document.getElementById('imageUrl');
+var imagePreview = document.getElementById('imagePreview');
+var previewImg = document.getElementById('previewImg');
+
+if (imageUrlInput.value) {
+    previewImg.src = imageUrlInput.value;
+    imagePreview.style.display = 'block';
+}
+
+imageUrlInput.addEventListener('input', function() {
+    if (this.value) {
+        previewImg.src = this.value;
+        imagePreview.style.display = 'block';
+    } else {
+        imagePreview.style.display = 'none';
+    }
+});
+
+// Upload Modal
+var uploadModal;
+function openUploadModal() {
+    uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'));
+    uploadModal.show();
+}
+
+var dropZone = document.getElementById('dropZone');
+var fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-primary');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-primary'));
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-primary');
+    uploadFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => uploadFile(fileInput.files[0]));
+
+function uploadFile(file) {
+    if (!file) return;
+    
+    var formData = new FormData();
+    formData.append('file', file);
+    
+    document.getElementById('uploadProgress').style.display = 'block';
+    document.querySelector('#uploadProgress .progress-bar').style.width = '50%';
+    
+    fetch('{{ admin_url("/upload") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.querySelector('#uploadProgress .progress-bar').style.width = '100%';
+        if (data.success) {
+            document.getElementById('uploadResult').innerHTML = 
+                '<div class="alert alert-success">Uploaded! URL: <code>' + data.url + '</code></div>';
+            imageUrlInput.value = data.url;
+            previewImg.src = data.url;
+            imagePreview.style.display = 'block';
+            setTimeout(() => uploadModal.hide(), 1500);
+        } else {
+            document.getElementById('uploadResult').innerHTML = 
+                '<div class="alert alert-danger">' + data.error + '</div>';
+        }
+    })
+    .catch(error => {
+        document.getElementById('uploadResult').innerHTML = 
+            '<div class="alert alert-danger">Upload failed</div>';
+    });
+}
+
+// Image Picker
+function openImagePicker() {
+    var modal = new bootstrap.Modal(document.getElementById('imagePickerModal'));
+    modal.show();
+    loadImageGallery();
+}
+
+function loadImageGallery() {
+    // Fetch images from server (we'll create a simple endpoint)
+    fetch('{{ admin_url("/api/images") }}')
+    .then(response => response.json())
+    .then(data => {
+        var gallery = document.getElementById('imageGallery');
+        if (data.images && data.images.length > 0) {
+            gallery.innerHTML = data.images.map(img => 
+                '<div class="col-4 col-md-3">' +
+                '<div class="card" style="cursor: pointer;" onclick="selectImage(\'' + img.url + '\')">' +
+                '<img src="' + img.url + '" class="card-img-top" style="height: 80px; object-fit: cover;">' +
+                '</div></div>'
+            ).join('');
+        } else {
+            gallery.innerHTML = '<div class="col-12 text-center py-4 text-muted">No images uploaded yet</div>';
+        }
+    })
+    .catch(() => {
+        document.getElementById('imageGallery').innerHTML = 
+            '<div class="col-12 text-center py-4 text-muted">Failed to load images</div>';
+    });
+}
+
+function selectImage(url) {
+    imageUrlInput.value = url;
+    previewImg.src = url;
+    imagePreview.style.display = 'block';
+    bootstrap.Modal.getInstance(document.getElementById('imagePickerModal')).hide();
+}
 </script>
 {% endblock %}

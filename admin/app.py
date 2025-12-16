@@ -376,6 +376,49 @@ def delete_post(filename):
     
     return redirect(admin_url('/posts'))
 
+# Allowed image extensions
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'ico'}
+
+def allowed_file(filename):
+    """Check if file extension is allowed"""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def get_images():
+    """Get all uploaded images"""
+    images = []
+    if UPLOAD_DIR.exists():
+        for ext in ALLOWED_EXTENSIONS:
+            for file in UPLOAD_DIR.glob(f'*.{ext}'):
+                try:
+                    stat = file.stat()
+                    images.append({
+                        'filename': file.name,
+                        'url': f'/uploads/{file.name}',
+                        'size': stat.st_size,
+                        'size_human': format_size(stat.st_size),
+                        'modified': datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d %H:%M'),
+                    })
+                except Exception as e:
+                    print(f"Error reading {file}: {e}")
+    # Sort by modification time, newest first
+    images.sort(key=lambda x: x['modified'], reverse=True)
+    return images
+
+def format_size(size):
+    """Format file size to human readable"""
+    for unit in ['B', 'KB', 'MB', 'GB']:
+        if size < 1024:
+            return f"{size:.1f} {unit}"
+        size /= 1024
+    return f"{size:.1f} TB"
+
+@app.route('/images')
+@login_required
+def images():
+    """Image gallery/manager"""
+    all_images = get_images()
+    return render_template('images.html', images=all_images)
+
 @app.route('/upload', methods=['POST'])
 @login_required
 def upload_file():
@@ -387,6 +430,9 @@ def upload_file():
     if file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
     
+    if not allowed_file(file.filename):
+        return jsonify({'error': f'File type not allowed. Allowed: {ALLOWED_EXTENSIONS}'}), 400
+    
     if file:
         filename = secure_filename(file.filename)
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -395,9 +441,31 @@ def upload_file():
         file.save(file_path)
         
         url = f"/uploads/{filename}"
-        return jsonify({'url': url, 'filename': filename})
+        return jsonify({'url': url, 'filename': filename, 'success': True})
     
     return jsonify({'error': 'Upload failed'}), 500
+
+@app.route('/images/delete/<filename>', methods=['POST'])
+@login_required
+def delete_image(filename):
+    """Delete an uploaded image"""
+    file_path = UPLOAD_DIR / secure_filename(filename)
+    if file_path.exists():
+        try:
+            file_path.unlink()
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': 'Image deleted'})
+            flash('Image deleted successfully!', 'success')
+        except Exception as e:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'error': str(e)}), 500
+            flash(f'Error deleting image: {e}', 'error')
+    else:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'error': 'Image not found'}), 404
+        flash('Image not found', 'error')
+    
+    return redirect(admin_url('/images'))
 
 @app.route('/preview', methods=['POST'])
 @login_required
@@ -417,6 +485,13 @@ def rebuild():
     else:
         flash(f'Rebuild failed: {message}', 'error')
     return redirect(admin_url('/'))
+
+@app.route('/api/images')
+@login_required
+def api_images():
+    """API endpoint to get list of images"""
+    all_images = get_images()
+    return jsonify({'images': all_images})
 
 @app.route('/health')
 def health():
