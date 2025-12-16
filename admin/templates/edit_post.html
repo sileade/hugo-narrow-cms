@@ -4,47 +4,50 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
 <style>
-:root {
-    --editor-bg: #1e1e1e;
-    --editor-text: #d4d4d4;
-    --preview-bg: #252526;
-    --toolbar-bg: #333333;
-    --border-color: #3c3c3c;
-    --accent-color: #6c5ce7;
-}
+* { box-sizing: border-box; }
 
-.editor-container {
+.editor-page {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 140px);
-    background: var(--editor-bg);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    height: calc(100vh - 60px);
+    margin: -1.5rem;
+    background: #fff;
 }
 
+/* Top Toolbar - StackEdit style */
 .editor-toolbar {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 8px 12px;
-    background: var(--toolbar-bg);
-    border-bottom: 1px solid var(--border-color);
-    flex-wrap: wrap;
+    height: 44px;
+    padding: 0 8px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    flex-shrink: 0;
 }
 
-.toolbar-group {
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.toolbar-center {
     display: flex;
     align-items: center;
     gap: 2px;
-    padding: 0 8px;
-    border-right: 1px solid var(--border-color);
+    margin-left: 16px;
+    padding-left: 16px;
+    border-left: 1px solid #e0e0e0;
 }
 
-.toolbar-group:last-child { border-right: none; }
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
 
 .toolbar-btn {
     display: flex;
@@ -54,531 +57,551 @@
     height: 32px;
     border: none;
     background: transparent;
-    color: #999;
-    border-radius: 6px;
+    color: #5f6368;
+    border-radius: 4px;
     cursor: pointer;
-    transition: all 0.2s;
     font-size: 14px;
+    transition: all 0.15s;
 }
 
 .toolbar-btn:hover {
-    background: rgba(255,255,255,0.1);
-    color: #fff;
+    background: #e8eaed;
+    color: #202124;
 }
 
 .toolbar-btn.active {
-    background: var(--accent-color);
-    color: #fff;
+    background: #e8f0fe;
+    color: #1a73e8;
 }
 
-.view-modes {
-    display: flex;
-    gap: 4px;
-    margin-left: auto;
+.toolbar-divider {
+    width: 1px;
+    height: 24px;
+    background: #e0e0e0;
+    margin: 0 4px;
 }
 
-.view-mode-btn {
-    padding: 6px 12px;
-    border: 1px solid var(--border-color);
+.file-name-input {
+    border: none;
     background: transparent;
-    color: #999;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: all 0.2s;
+    font-size: 14px;
+    font-weight: 500;
+    color: #202124;
+    padding: 4px 8px;
+    border-radius: 4px;
+    width: 200px;
 }
 
-.view-mode-btn:hover {
-    background: rgba(255,255,255,0.1);
-    color: #fff;
+.file-name-input:hover {
+    background: #f1f3f4;
 }
 
-.view-mode-btn.active {
-    background: var(--accent-color);
-    border-color: var(--accent-color);
-    color: #fff;
+.file-name-input:focus {
+    background: #fff;
+    outline: 2px solid #1a73e8;
 }
 
-.editor-panels {
+/* Main Editor Area */
+.editor-main {
     display: flex;
     flex: 1;
     overflow: hidden;
 }
 
-.editor-pane, .preview-pane {
-    flex: 1;
-    overflow: auto;
-    position: relative;
-}
-
+/* Editor Pane (Left) */
 .editor-pane {
-    border-right: 1px solid var(--border-color);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #e0e0e0;
+    background: #fff;
+    min-width: 0;
 }
 
 .CodeMirror {
-    height: 100% !important;
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    flex: 1;
+    height: auto !important;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
     font-size: 14px;
     line-height: 1.6;
-    background: var(--editor-bg);
+    padding: 16px 0;
+}
+
+.CodeMirror-lines {
+    padding: 0 20px;
+}
+
+.CodeMirror-scroll {
+    padding-bottom: 50px;
 }
 
 .CodeMirror-gutters {
-    background: var(--editor-bg);
-    border-right: 1px solid var(--border-color);
+    background: #fff;
+    border-right: none;
 }
 
-.CodeMirror-linenumber { color: #555; }
-.CodeMirror-cursor { border-left: 2px solid var(--accent-color); }
-.CodeMirror-selected { background: rgba(108, 92, 231, 0.3) !important; }
-.CodeMirror-activeline-background { background: rgba(255,255,255,0.03); }
+.CodeMirror-linenumber {
+    color: #bbb;
+    padding: 0 8px;
+}
 
+/* Preview Pane (Right) */
 .preview-pane {
-    background: var(--preview-bg);
-    padding: 24px 32px;
-    color: var(--editor-text);
+    flex: 1;
+    overflow-y: auto;
+    background: #fff;
+    padding: 20px 40px;
+    min-width: 0;
 }
 
 .preview-content {
     max-width: 800px;
     margin: 0 auto;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 16px;
     line-height: 1.8;
+    color: #202124;
 }
 
-.preview-content h1, .preview-content h2, .preview-content h3,
-.preview-content h4, .preview-content h5, .preview-content h6 {
-    color: #fff;
-    margin-top: 1.5em;
-    margin-bottom: 0.5em;
+.preview-content h1 {
+    font-size: 2em;
     font-weight: 600;
+    margin: 1em 0 0.5em;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid #eaecef;
+    color: #202124;
 }
 
-.preview-content h1 { font-size: 2em; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; }
-.preview-content h2 { font-size: 1.5em; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; }
-.preview-content h3 { font-size: 1.25em; }
+.preview-content h2 {
+    font-size: 1.5em;
+    font-weight: 600;
+    margin: 1em 0 0.5em;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid #eaecef;
+    color: #202124;
+}
+
+.preview-content h3 { font-size: 1.25em; font-weight: 600; margin: 1em 0 0.5em; }
+.preview-content h4 { font-size: 1em; font-weight: 600; margin: 1em 0 0.5em; }
 .preview-content p { margin: 1em 0; }
-.preview-content a { color: var(--accent-color); text-decoration: none; }
+.preview-content a { color: #1a73e8; text-decoration: none; }
 .preview-content a:hover { text-decoration: underline; }
 
 .preview-content code {
-    background: rgba(255,255,255,0.1);
+    background: #f1f3f4;
     padding: 2px 6px;
     border-radius: 4px;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'SF Mono', monospace;
     font-size: 0.9em;
+    color: #d73a49;
 }
 
 .preview-content pre {
-    background: #1e1e1e;
+    background: #f6f8fa;
     padding: 16px;
-    border-radius: 8px;
+    border-radius: 6px;
     overflow-x: auto;
     margin: 1em 0;
 }
 
-.preview-content pre code { background: none; padding: 0; }
+.preview-content pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+}
 
 .preview-content blockquote {
-    border-left: 4px solid var(--accent-color);
+    border-left: 4px solid #dfe2e5;
     margin: 1em 0;
-    padding: 0.5em 1em;
-    background: rgba(108, 92, 231, 0.1);
-    border-radius: 0 8px 8px 0;
+    padding: 0 1em;
+    color: #6a737d;
 }
 
-.preview-content ul, .preview-content ol { padding-left: 2em; margin: 1em 0; }
+.preview-content ul, .preview-content ol {
+    padding-left: 2em;
+    margin: 1em 0;
+}
+
 .preview-content li { margin: 0.5em 0; }
 
-.preview-content table { width: 100%; border-collapse: collapse; margin: 1em 0; }
-.preview-content th, .preview-content td { border: 1px solid var(--border-color); padding: 8px 12px; text-align: left; }
-.preview-content th { background: rgba(255,255,255,0.05); }
-.preview-content img { max-width: 100%; border-radius: 8px; margin: 1em 0; }
-.preview-content hr { border: none; border-top: 1px solid var(--border-color); margin: 2em 0; }
+.preview-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0;
+}
 
-.editor-statusbar {
+.preview-content th, .preview-content td {
+    border: 1px solid #dfe2e5;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.preview-content th { background: #f6f8fa; font-weight: 600; }
+.preview-content img { max-width: 100%; border-radius: 4px; }
+.preview-content hr { border: none; border-top: 1px solid #eaecef; margin: 2em 0; }
+
+/* Status Bar */
+.status-bar {
     display: flex;
     justify-content: space-between;
-    padding: 6px 12px;
-    background: var(--toolbar-bg);
-    border-top: 1px solid var(--border-color);
-    font-size: 12px;
-    color: #888;
+    align-items: center;
+    height: 24px;
+    padding: 0 12px;
+    background: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+    font-size: 11px;
+    color: #5f6368;
+    flex-shrink: 0;
 }
 
-.status-item { display: flex; align-items: center; gap: 4px; }
+.status-left, .status-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Settings Panel */
+.settings-toggle {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 60px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-right: none;
+    border-radius: 4px 0 0 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5f6368;
+    z-index: 100;
+}
+
+.settings-toggle:hover {
+    background: #e8eaed;
+}
 
 .settings-panel {
-    background: #2d2d2d;
-    border-radius: 12px;
-    overflow: hidden;
+    position: fixed;
+    right: -320px;
+    top: 60px;
+    width: 320px;
+    height: calc(100vh - 60px);
+    background: #fff;
+    border-left: 1px solid #e0e0e0;
+    box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+    transition: right 0.3s ease;
+    z-index: 99;
+    overflow-y: auto;
+    padding: 20px;
 }
 
-.settings-panel .card-header {
-    background: var(--toolbar-bg);
-    border-bottom: 1px solid var(--border-color);
-    color: #fff;
+.settings-panel.open {
+    right: 0;
+}
+
+.settings-panel h5 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #202124;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.settings-panel .form-label {
+    font-size: 12px;
     font-weight: 500;
+    color: #5f6368;
+    margin-bottom: 4px;
 }
-
-.settings-panel .card-body { background: #2d2d2d; }
-.settings-panel .form-label { color: #ccc; font-size: 13px; font-weight: 500; }
 
 .settings-panel .form-control {
-    background: #1e1e1e;
-    border: 1px solid var(--border-color);
-    color: #fff;
+    font-size: 13px;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    padding: 8px 12px;
 }
 
 .settings-panel .form-control:focus {
-    background: #1e1e1e;
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.2);
-    color: #fff;
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
 }
 
-.settings-panel .form-control::placeholder { color: #666; }
-.settings-panel .text-muted { color: #666 !important; }
+.settings-panel .btn-primary {
+    background: #1a73e8;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 24px;
+    border-radius: 4px;
+}
 
+.settings-panel .btn-primary:hover {
+    background: #1557b0;
+}
+
+/* Pane Resizer */
 .pane-resizer {
     width: 4px;
-    background: var(--border-color);
+    background: #e0e0e0;
     cursor: col-resize;
-    transition: background 0.2s;
+    flex-shrink: 0;
 }
 
-.pane-resizer:hover { background: var(--accent-color); }
-
-.editor-container.mode-editor .preview-pane,
-.editor-container.mode-editor .pane-resizer { display: none; }
-.editor-container.mode-editor .editor-pane { border-right: none; }
-.editor-container.mode-preview .editor-pane,
-.editor-container.mode-preview .pane-resizer { display: none; }
-
-.shortcuts-table { width: 100%; }
-.shortcuts-table td { padding: 8px; border-bottom: 1px solid var(--border-color); }
-.shortcuts-table kbd { background: #333; padding: 4px 8px; border-radius: 4px; font-family: monospace; color: #fff; }
-
-.toc-sidebar {
-    position: absolute;
-    right: 16px;
-    top: 16px;
-    width: 200px;
-    background: rgba(0,0,0,0.5);
-    border-radius: 8px;
-    padding: 12px;
-    font-size: 12px;
-    max-height: 300px;
-    overflow-y: auto;
-    display: none;
+.pane-resizer:hover {
+    background: #1a73e8;
 }
 
-.toc-sidebar.visible { display: block; }
-.toc-sidebar h6 { color: #888; margin-bottom: 8px; font-size: 11px; text-transform: uppercase; }
-.toc-sidebar a { display: block; color: #aaa; text-decoration: none; padding: 4px 0; padding-left: calc(var(--level, 0) * 12px); }
-.toc-sidebar a:hover { color: var(--accent-color); }
+/* View mode classes */
+.editor-main.mode-editor .preview-pane,
+.editor-main.mode-editor .pane-resizer { display: none; }
 
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-.saving { animation: pulse 1s infinite; }
+.editor-main.mode-preview .editor-pane,
+.editor-main.mode-preview .pane-resizer { display: none; }
 
-@media (max-width: 992px) {
-    .editor-container { height: calc(100vh - 100px); }
-    .editor-panels { flex-direction: column; }
-    .editor-pane { border-right: none; border-bottom: 1px solid var(--border-color); }
+/* Responsive */
+@media (max-width: 768px) {
+    .editor-main { flex-direction: column; }
+    .editor-pane { border-right: none; border-bottom: 1px solid #e0e0e0; }
     .pane-resizer { display: none; }
+    .settings-panel { width: 100%; right: -100%; }
+}
+
+/* Fullscreen mode */
+.editor-page.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100vh;
+    margin: 0;
+    z-index: 9999;
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">
-        <i class="bi bi-pencil-square me-2"></i>{{ 'Edit Post' if post else 'New Post' }}
-    </h4>
-    <a href="{{ admin_url('/posts') }}" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left me-1"></i> Back
-    </a>
+<div class="editor-page" id="editorPage">
+    <!-- Top Toolbar -->
+    <div class="editor-toolbar">
+        <div class="toolbar-left">
+            <a href="{{ admin_url('/posts') }}" class="toolbar-btn" title="Back to Posts">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <input type="text" class="file-name-input" id="postTitle" name="title" 
+                   value="{{ post.title if post else '' }}" placeholder="Untitled" required>
+        </div>
+        
+        <div class="toolbar-center">
+            <button type="button" class="toolbar-btn" onclick="editor.undo()" title="Undo">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="editor.redo()" title="Redo">
+                <i class="bi bi-arrow-clockwise"></i>
+            </button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <button type="button" class="toolbar-btn" onclick="insertFormat('bold')" title="Bold (Ctrl+B)">
+                <i class="bi bi-type-bold"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="insertFormat('italic')" title="Italic (Ctrl+I)">
+                <i class="bi bi-type-italic"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="insertFormat('h1')" title="Heading">
+                <i class="bi bi-type-h1"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="insertFormat('strikethrough')" title="Strikethrough">
+                <i class="bi bi-type-strikethrough"></i>
+            </button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <button type="button" class="toolbar-btn" onclick="insertFormat('ul')" title="Bullet List">
+                <i class="bi bi-list-ul"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="insertFormat('ol')" title="Numbered List">
+                <i class="bi bi-list-ol"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="insertFormat('task')" title="Task List">
+                <i class="bi bi-check2-square"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="insertFormat('quote')" title="Quote">
+                <i class="bi bi-quote"></i>
+            </button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <button type="button" class="toolbar-btn" onclick="insertFormat('code')" title="Code">
+                <i class="bi bi-code"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="insertFormat('codeblock')" title="Code Block">
+                <i class="bi bi-code-square"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="insertFormat('table')" title="Table">
+                <i class="bi bi-table"></i>
+            </button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <button type="button" class="toolbar-btn" onclick="insertFormat('link')" title="Link (Ctrl+K)">
+                <i class="bi bi-link-45deg"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="insertFormat('image')" title="Image">
+                <i class="bi bi-image"></i>
+            </button>
+        </div>
+        
+        <div class="toolbar-right">
+            <button type="button" class="toolbar-btn" id="btnEditor" onclick="setViewMode('editor')" title="Editor Only">
+                <i class="bi bi-code-slash"></i>
+            </button>
+            <button type="button" class="toolbar-btn active" id="btnSplit" onclick="setViewMode('split')" title="Split View">
+                <i class="bi bi-layout-split"></i>
+            </button>
+            <button type="button" class="toolbar-btn" id="btnPreview" onclick="setViewMode('preview')" title="Preview Only">
+                <i class="bi bi-eye"></i>
+            </button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <button type="button" class="toolbar-btn" onclick="toggleFullscreen()" title="Fullscreen">
+                <i class="bi bi-fullscreen"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="toggleSettings()" title="Settings">
+                <i class="bi bi-gear"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Main Editor Area -->
+    <div class="editor-main mode-split" id="editorMain">
+        <div class="editor-pane">
+            <textarea id="content" name="content">{{ post.content if post else '' }}</textarea>
+        </div>
+        <div class="pane-resizer" id="paneResizer"></div>
+        <div class="preview-pane">
+            <div class="preview-content" id="previewContent">
+                <p style="color: #999; text-align: center; padding-top: 100px;">
+                    Start typing to see preview...
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-left">
+            <span class="status-item"><strong>Markdown</strong></span>
+            <span class="status-item" id="byteCount">0 bytes</span>
+            <span class="status-item" id="wordCount">0 words</span>
+            <span class="status-item" id="lineCount">0 lines</span>
+            <span class="status-item" id="cursorPos">Ln 1, Col 0</span>
+        </div>
+        <div class="status-right">
+            <span class="status-item"><strong>HTML</strong></span>
+            <span class="status-item" id="htmlChars">0 characters</span>
+            <span class="status-item" id="htmlWords">0 words</span>
+        </div>
+    </div>
 </div>
 
-<form method="POST" action="{{ admin_url('/posts/edit/' + post.filename) if post else admin_url('/posts/new') }}" id="postForm">
-    <div class="row g-3">
-        <div class="col-lg-9">
-            <div class="mb-3">
-                <input type="text" name="title" class="form-control form-control-lg" 
-                       value="{{ post.title if post else '' }}" required 
-                       placeholder="Post Title..." id="postTitle"
-                       style="background: #2d2d2d; border: 1px solid #3c3c3c; color: #fff; font-weight: 600;">
+<!-- Settings Panel -->
+<div class="settings-panel" id="settingsPanel">
+    <form method="POST" action="{{ admin_url('/posts/edit/' + post.filename) if post else admin_url('/posts/new') }}" id="postForm">
+        <input type="hidden" name="title" id="hiddenTitle">
+        <input type="hidden" name="content" id="hiddenContent">
+        
+        <h5><i class="bi bi-gear"></i> Post Settings</h5>
+        
+        <div class="mb-3">
+            <label class="form-label">Slug (URL)</label>
+            <input type="text" name="slug" class="form-control" 
+                   value="{{ post.filename[:-3] if post else '' }}"
+                   placeholder="auto-generated-from-title"
+                   {% if post %}readonly{% endif %}>
+            <small class="text-muted">Leave empty to auto-generate</small>
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="2" 
+                      placeholder="Brief description for SEO...">{{ post.description if post else '' }}</textarea>
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Tags</label>
+            <input type="text" name="tags" class="form-control" 
+                   value="{{ post.tags if post else '' }}"
+                   placeholder="tag1, tag2, tag3">
+            <small class="text-muted">Comma-separated</small>
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Categories</label>
+            <input type="text" name="categories" class="form-control" 
+                   value="{{ post.categories if post else '' }}"
+                   placeholder="category1, category2">
+            <small class="text-muted">Comma-separated</small>
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Featured Image</label>
+            <div class="input-group">
+                <input type="text" name="image" id="imageUrl" class="form-control" 
+                       value="{{ post.image if post else '' }}"
+                       placeholder="/uploads/image.jpg">
+                <button type="button" class="btn btn-outline-secondary" onclick="openImagePicker()">
+                    <i class="bi bi-images"></i>
+                </button>
             </div>
-            
-            <div class="editor-container mode-split" id="editorContainer">
-                <div class="editor-toolbar">
-                    <div class="toolbar-group">
-                        <button type="button" class="toolbar-btn" onclick="insertFormat('bold')" title="Bold (Ctrl+B)">
-                            <i class="bi bi-type-bold"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" onclick="insertFormat('italic')" title="Italic (Ctrl+I)">
-                            <i class="bi bi-type-italic"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" onclick="insertFormat('strikethrough')" title="Strikethrough">
-                            <i class="bi bi-type-strikethrough"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" onclick="insertFormat('code')" title="Inline Code">
-                            <i class="bi bi-code"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="toolbar-group">
-                        <button type="button" class="toolbar-btn" onclick="insertFormat('h1')" title="Heading 1">
-                            <strong>H1</strong>
-                        </button>
-                        <button type="button" class="toolbar-btn" onclick="insertFormat('h2')" title="Heading 2">
-                            <strong>H2</strong>
-                        </button>
-                        <button type="button" class="toolbar-btn" onclick="insertFormat('h3')" title="Heading 3">
-                            <strong>H3</strong>
-                        </button>
-                    </div>
-                    
-                    <div class="toolbar-group">
-                        <button type="button" class="toolbar-btn" onclick="insertFormat('ul')" title="Bullet List">
-                            <i class="bi bi-list-ul"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" onclick="insertFormat('ol')" title="Numbered List">
-                            <i class="bi bi-list-ol"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" onclick="insertFormat('task')" title="Task List">
-                            <i class="bi bi-check2-square"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" onclick="insertFormat('quote')" title="Quote">
-                            <i class="bi bi-quote"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="toolbar-group">
-                        <button type="button" class="toolbar-btn" onclick="insertFormat('link')" title="Link (Ctrl+K)">
-                            <i class="bi bi-link-45deg"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" onclick="insertFormat('image')" title="Image">
-                            <i class="bi bi-image"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" onclick="insertFormat('table')" title="Table">
-                            <i class="bi bi-table"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" onclick="insertFormat('codeblock')" title="Code Block">
-                            <i class="bi bi-file-code"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" onclick="insertFormat('hr')" title="Horizontal Rule">
-                            <i class="bi bi-dash-lg"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="toolbar-group">
-                        <button type="button" class="toolbar-btn" onclick="editor.undo()" title="Undo">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" onclick="editor.redo()" title="Redo">
-                            <i class="bi bi-arrow-clockwise"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="toolbar-group">
-                        <button type="button" class="toolbar-btn" onclick="toggleTOC()" title="Table of Contents">
-                            <i class="bi bi-list-nested"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" onclick="showShortcuts()" title="Keyboard Shortcuts">
-                            <i class="bi bi-keyboard"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="view-modes">
-                        <button type="button" class="view-mode-btn" onclick="setViewMode('editor', this)" title="Editor Only">
-                            <i class="bi bi-code-slash"></i>
-                        </button>
-                        <button type="button" class="view-mode-btn active" onclick="setViewMode('split', this)" title="Split View">
-                            <i class="bi bi-layout-split"></i>
-                        </button>
-                        <button type="button" class="view-mode-btn" onclick="setViewMode('preview', this)" title="Preview Only">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button type="button" class="view-mode-btn" onclick="toggleFullscreen()" title="Fullscreen">
-                            <i class="bi bi-fullscreen"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="editor-panels">
-                    <div class="editor-pane">
-                        <textarea name="content" id="content">{{ post.content if post else '' }}</textarea>
-                    </div>
-                    <div class="pane-resizer" id="paneResizer"></div>
-                    <div class="preview-pane">
-                        <div class="preview-content" id="previewContent">
-                            <p style="color: #666; text-align: center; padding-top: 100px;">
-                                <i class="bi bi-pencil" style="font-size: 48px;"></i><br>
-                                Start typing to see preview...
-                            </p>
-                        </div>
-                        <div class="toc-sidebar" id="tocSidebar">
-                            <h6>Contents</h6>
-                            <div id="tocContent"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="editor-statusbar">
-                    <div class="status-item">
-                        <i class="bi bi-file-text"></i>
-                        <span id="wordCount">0 words</span>
-                        <span class="mx-2">|</span>
-                        <span id="charCount">0 chars</span>
-                        <span class="mx-2">|</span>
-                        <span id="lineCount">0 lines</span>
-                    </div>
-                    <div class="status-item">
-                        <span id="cursorPosition">Ln 1, Col 1</span>
-                        <span class="mx-2">|</span>
-                        <span>Markdown</span>
-                        <span class="mx-2">|</span>
-                        <span id="saveStatus">Ready</span>
-                    </div>
-                </div>
+            <div id="imagePreview" class="mt-2" style="display: none;">
+                <img id="previewImg" src="" alt="Preview" style="max-width: 100%; max-height: 80px; border-radius: 4px;">
             </div>
         </div>
         
-        <div class="col-lg-3">
-            <div class="settings-panel card mb-3">
-                <div class="card-header">
-                    <i class="bi bi-gear me-2"></i>Settings
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label">Slug (URL)</label>
-                        <input type="text" name="slug" class="form-control form-control-sm" 
-                               value="{{ post.filename[:-3] if post else '' }}"
-                               placeholder="auto-generated-from-title"
-                               {% if post %}readonly{% endif %}>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea name="description" class="form-control form-control-sm" rows="2" 
-                                  placeholder="SEO description...">{{ post.description if post else '' }}</textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Tags</label>
-                        <input type="text" name="tags" class="form-control form-control-sm" 
-                               value="{{ post.tags if post else '' }}"
-                               placeholder="tag1, tag2, tag3">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Categories</label>
-                        <input type="text" name="categories" class="form-control form-control-sm" 
-                               value="{{ post.categories if post else '' }}"
-                               placeholder="category1, category2">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Featured Image</label>
-                        <div class="input-group input-group-sm">
-                            <input type="text" name="image" id="imageUrl" class="form-control" 
-                                   value="{{ post.image if post else '' }}"
-                                   placeholder="/uploads/image.jpg">
-                            <button type="button" class="btn btn-outline-secondary" onclick="openImagePicker()">
-                                <i class="bi bi-images"></i>
-                            </button>
-                            <button type="button" class="btn btn-outline-primary" onclick="openUploadModal()">
-                                <i class="bi bi-upload"></i>
-                            </button>
-                        </div>
-                        <div id="imagePreview" class="mt-2" style="display: none;">
-                            <img id="previewImg" src="" alt="Preview" style="max-width: 100%; max-height: 100px; border-radius: 8px;">
-                        </div>
-                    </div>
-                    
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" name="draft" id="draft"
-                               {% if post and post.draft %}checked{% endif %}>
-                        <label class="form-check-label" for="draft">Save as Draft</label>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="settings-panel card">
-                <div class="card-header">
-                    <i class="bi bi-check2-circle me-2"></i>Actions
-                </div>
-                <div class="card-body">
-                    <button type="submit" class="btn btn-primary w-100 mb-2">
-                        <i class="bi bi-check-lg me-1"></i> {{ 'Update Post' if post else 'Create Post' }}
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary w-100" onclick="previewInNewTab()">
-                        <i class="bi bi-box-arrow-up-right me-1"></i> Preview
-                    </button>
-                </div>
+        <div class="mb-4">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" name="draft" id="draft"
+                       {% if post and post.draft %}checked{% endif %}>
+                <label class="form-check-label" for="draft">Save as Draft</label>
             </div>
         </div>
-    </div>
-</form>
+        
+        <button type="submit" class="btn btn-primary w-100 mb-2">
+            <i class="bi bi-check-lg me-1"></i> {{ 'Update Post' if post else 'Create Post' }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary w-100" onclick="previewInNewTab()">
+            <i class="bi bi-box-arrow-up-right me-1"></i> Preview in New Tab
+        </button>
+    </form>
+</div>
 
-<!-- Modals -->
+<!-- Image Picker Modal -->
 <div class="modal fade" id="imagePickerModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content" style="background: #2d2d2d; color: #fff;">
-            <div class="modal-header" style="border-color: #3c3c3c;">
+        <div class="modal-content">
+            <div class="modal-header">
                 <h5 class="modal-title"><i class="bi bi-images me-2"></i>Select Image</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
+                <div class="mb-3">
+                    <input type="file" id="uploadInput" accept="image/*" class="form-control">
+                </div>
                 <div class="row g-2" id="imageGallery">Loading...</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="uploadModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content" style="background: #2d2d2d; color: #fff;">
-            <div class="modal-header" style="border-color: #3c3c3c;">
-                <h5 class="modal-title"><i class="bi bi-upload me-2"></i>Upload Image</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div id="dropZone" class="border border-2 border-dashed rounded p-5 text-center" 
-                     style="cursor: pointer; border-color: #3c3c3c !important;">
-                    <i class="bi bi-cloud-upload" style="font-size: 48px; color: #666;"></i>
-                    <p class="mt-2 mb-0 text-muted">Drop image here or click to upload</p>
-                </div>
-                <input type="file" id="fileInput" accept="image/*" style="display: none;">
-                <div id="uploadProgress" class="mt-3" style="display: none;">
-                    <div class="progress" style="background: #1e1e1e;">
-                        <div class="progress-bar bg-primary" style="width: 0%"></div>
-                    </div>
-                </div>
-                <div id="uploadResult" class="mt-3"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="shortcutsModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content" style="background: #2d2d2d; color: #fff;">
-            <div class="modal-header" style="border-color: #3c3c3c;">
-                <h5 class="modal-title"><i class="bi bi-keyboard me-2"></i>Keyboard Shortcuts</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <table class="shortcuts-table">
-                    <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd></td><td>Bold</td></tr>
-                    <tr><td><kbd>Ctrl</kbd>+<kbd>I</kbd></td><td>Italic</td></tr>
-                    <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>Link</td></tr>
-                    <tr><td><kbd>Ctrl</kbd>+<kbd>Q</kbd></td><td>Quote</td></tr>
-                    <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Save</td></tr>
-                    <tr><td><kbd>Ctrl</kbd>+<kbd>1-6</kbd></td><td>Headings</td></tr>
-                    <tr><td><kbd>F11</kbd></td><td>Fullscreen</td></tr>
-                </table>
             </div>
         </div>
     </div>
@@ -590,14 +613,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/gfm/gfm.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/continuelist.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/display/placeholder.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
 <script>
+// Initialize CodeMirror
 var editor = CodeMirror.fromTextArea(document.getElementById('content'), {
     mode: 'gfm',
-    theme: 'dracula',
     lineNumbers: true,
     lineWrapping: true,
     extraKeys: {
@@ -605,17 +627,12 @@ var editor = CodeMirror.fromTextArea(document.getElementById('content'), {
         "Ctrl-B": function() { insertFormat('bold'); },
         "Ctrl-I": function() { insertFormat('italic'); },
         "Ctrl-K": function() { insertFormat('link'); },
-        "Ctrl-Q": function() { insertFormat('quote'); },
-        "Ctrl-S": function() { document.getElementById('postForm').submit(); },
-        "Ctrl-1": function() { insertFormat('h1'); },
-        "Ctrl-2": function() { insertFormat('h2'); },
-        "Ctrl-3": function() { insertFormat('h3'); },
+        "Ctrl-S": function(cm) { savePost(); },
         "F11": function() { toggleFullscreen(); }
-    },
-    placeholder: "Write your post content in Markdown...",
-    styleActiveLine: true
+    }
 });
 
+// Configure marked
 marked.setOptions({
     highlight: function(code, lang) {
         if (lang && hljs.getLanguage(lang)) {
@@ -627,60 +644,42 @@ marked.setOptions({
     gfm: true
 });
 
+// Update preview on change
 var updateTimeout;
 editor.on('change', function() {
     clearTimeout(updateTimeout);
-    updateTimeout = setTimeout(updatePreview, 150);
+    updateTimeout = setTimeout(updatePreview, 100);
     updateStats();
-    document.getElementById('saveStatus').textContent = 'Unsaved';
 });
 
 editor.on('cursorActivity', function() {
     var cursor = editor.getCursor();
-    document.getElementById('cursorPosition').textContent = 'Ln ' + (cursor.line + 1) + ', Col ' + (cursor.ch + 1);
+    document.getElementById('cursorPos').textContent = 'Ln ' + (cursor.line + 1) + ', Col ' + cursor.ch;
 });
 
 function updatePreview() {
     var content = editor.getValue();
-    document.getElementById('previewContent').innerHTML = marked.parse(content);
+    var html = marked.parse(content);
+    document.getElementById('previewContent').innerHTML = html;
     document.querySelectorAll('#previewContent pre code').forEach(function(block) {
         hljs.highlightElement(block);
     });
-    updateTOC(content);
+    
+    // Update HTML stats
+    var text = document.getElementById('previewContent').textContent;
+    document.getElementById('htmlChars').textContent = html.length + ' characters';
+    document.getElementById('htmlWords').textContent = (text.trim() ? text.trim().split(/\s+/).length : 0) + ' words';
 }
 
 function updateStats() {
     var content = editor.getValue();
+    var bytes = new Blob([content]).size;
     var words = content.trim() ? content.trim().split(/\s+/).length : 0;
+    var lines = editor.lineCount();
+    
+    document.getElementById('byteCount').textContent = bytes + ' bytes';
     document.getElementById('wordCount').textContent = words + ' words';
-    document.getElementById('charCount').textContent = content.length + ' chars';
-    document.getElementById('lineCount').textContent = editor.lineCount() + ' lines';
-}
-
-function updateTOC(content) {
-    var headings = content.match(/^#{1,6}\s+.+$/gm) || [];
-    var tocContent = document.getElementById('tocContent');
-    if (headings.length === 0) {
-        tocContent.innerHTML = '<span style="color: #666;">No headings</span>';
-        return;
-    }
-    tocContent.innerHTML = headings.map(function(h) {
-        var level = h.match(/^#+/)[0].length;
-        var text = h.replace(/^#+\s+/, '');
-        return '<a href="javascript:void(0)" style="--level: ' + (level - 1) + ';" onclick="scrollToHeading(\'' + text.replace(/'/g, "\\'") + '\')">' + text + '</a>';
-    }).join('');
-}
-
-function scrollToHeading(text) {
-    var lines = editor.getValue().split('\n');
-    for (var i = 0; i < lines.length; i++) {
-        if (lines[i].match(/^#+\s+/) && lines[i].includes(text)) {
-            editor.setCursor(i, 0);
-            editor.scrollIntoView({line: i, ch: 0}, 100);
-            editor.focus();
-            break;
-        }
-    }
+    document.getElementById('lineCount').textContent = lines + ' lines';
 }
 
 function insertFormat(type) {
@@ -693,18 +692,17 @@ function insertFormat(type) {
         'italic': { before: '*', after: '*', placeholder: 'italic text' },
         'strikethrough': { before: '~~', after: '~~', placeholder: 'strikethrough' },
         'code': { before: '`', after: '`', placeholder: 'code' },
-        'h1': { before: '# ', after: '', placeholder: 'Heading 1', line: true },
-        'h2': { before: '## ', after: '', placeholder: 'Heading 2', line: true },
-        'h3': { before: '### ', after: '', placeholder: 'Heading 3', line: true },
+        'h1': { before: '# ', after: '', placeholder: 'Heading', line: true },
+        'h2': { before: '## ', after: '', placeholder: 'Heading', line: true },
+        'h3': { before: '### ', after: '', placeholder: 'Heading', line: true },
         'ul': { before: '- ', after: '', placeholder: 'List item', line: true },
         'ol': { before: '1. ', after: '', placeholder: 'List item', line: true },
-        'task': { before: '- [ ] ', after: '', placeholder: 'Task item', line: true },
+        'task': { before: '- [ ] ', after: '', placeholder: 'Task', line: true },
         'quote': { before: '> ', after: '', placeholder: 'Quote', line: true },
-        'hr': { before: '\n---\n', after: '', placeholder: '' },
         'link': { before: '[', after: '](url)', placeholder: 'link text' },
         'image': { before: '![', after: '](image-url)', placeholder: 'alt text' },
-        'codeblock': { before: '```\n', after: '\n```', placeholder: 'code here' },
-        'table': { before: '| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |\n', after: '', placeholder: '' }
+        'codeblock': { before: '```\n', after: '\n```', placeholder: 'code' },
+        'table': { before: '| Header | Header |\n|--------|--------|\n| Cell   | Cell   |\n', after: '', placeholder: '' }
     };
     
     var format = formats[type];
@@ -729,29 +727,32 @@ function insertFormat(type) {
     editor.focus();
 }
 
-function setViewMode(mode, btn) {
-    document.getElementById('editorContainer').className = 'editor-container mode-' + mode;
-    document.querySelectorAll('.view-mode-btn').forEach(function(b) { b.classList.remove('active'); });
-    if (btn) btn.classList.add('active');
+function setViewMode(mode) {
+    var main = document.getElementById('editorMain');
+    main.className = 'editor-main mode-' + mode;
+    
+    document.getElementById('btnEditor').classList.remove('active');
+    document.getElementById('btnSplit').classList.remove('active');
+    document.getElementById('btnPreview').classList.remove('active');
+    document.getElementById('btn' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+    
     if (mode !== 'editor') updatePreview();
-    editor.refresh();
+    setTimeout(function() { editor.refresh(); }, 10);
 }
 
 function toggleFullscreen() {
-    var container = document.getElementById('editorContainer');
-    if (document.fullscreenElement) {
-        document.exitFullscreen();
-    } else {
-        container.requestFullscreen();
-    }
+    document.getElementById('editorPage').classList.toggle('fullscreen');
+    editor.refresh();
 }
 
-function toggleTOC() {
-    document.getElementById('tocSidebar').classList.toggle('visible');
+function toggleSettings() {
+    document.getElementById('settingsPanel').classList.toggle('open');
 }
 
-function showShortcuts() {
-    new bootstrap.Modal(document.getElementById('shortcutsModal')).show();
+function savePost() {
+    document.getElementById('hiddenTitle').value = document.getElementById('postTitle').value;
+    document.getElementById('hiddenContent').value = editor.getValue();
+    document.getElementById('postForm').submit();
 }
 
 function previewInNewTab() {
@@ -763,80 +764,24 @@ function previewInNewTab() {
     w.document.close();
 }
 
-// Pane resizer
-var resizer = document.getElementById('paneResizer');
-var editorPane = document.querySelector('.editor-pane');
-var previewPane = document.querySelector('.preview-pane');
-var isResizing = false;
-
-resizer.addEventListener('mousedown', function() { isResizing = true; document.body.style.cursor = 'col-resize'; });
-document.addEventListener('mousemove', function(e) {
-    if (!isResizing) return;
-    var container = document.querySelector('.editor-panels');
-    var rect = container.getBoundingClientRect();
-    var pct = ((e.clientX - rect.left) / rect.width) * 100;
-    if (pct > 20 && pct < 80) {
-        editorPane.style.flex = pct + ' 0 0';
-        previewPane.style.flex = (100 - pct) + ' 0 0';
-    }
-});
-document.addEventListener('mouseup', function() { isResizing = false; document.body.style.cursor = ''; editor.refresh(); });
-
-// Auto-generate slug
-document.getElementById('postTitle').addEventListener('blur', function() {
-    var slugInput = document.querySelector('input[name="slug"]');
-    if (!slugInput.readOnly && !slugInput.value) {
-        slugInput.value = this.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    }
-});
-
 // Image handling
 var imageUrlInput = document.getElementById('imageUrl');
 var imagePreview = document.getElementById('imagePreview');
 var previewImg = document.getElementById('previewImg');
 
-if (imageUrlInput.value) { previewImg.src = imageUrlInput.value; imagePreview.style.display = 'block'; }
+if (imageUrlInput.value) {
+    previewImg.src = imageUrlInput.value;
+    imagePreview.style.display = 'block';
+}
+
 imageUrlInput.addEventListener('input', function() {
-    if (this.value) { previewImg.src = this.value; imagePreview.style.display = 'block'; }
-    else { imagePreview.style.display = 'none'; }
+    if (this.value) {
+        previewImg.src = this.value;
+        imagePreview.style.display = 'block';
+    } else {
+        imagePreview.style.display = 'none';
+    }
 });
-
-var uploadModal;
-function openUploadModal() {
-    uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'));
-    uploadModal.show();
-}
-
-var dropZone = document.getElementById('dropZone');
-var fileInput = document.getElementById('fileInput');
-dropZone.addEventListener('click', function() { fileInput.click(); });
-dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.style.borderColor = '#6c5ce7'; });
-dropZone.addEventListener('dragleave', function() { dropZone.style.borderColor = '#3c3c3c'; });
-dropZone.addEventListener('drop', function(e) { e.preventDefault(); dropZone.style.borderColor = '#3c3c3c'; uploadFile(e.dataTransfer.files[0]); });
-fileInput.addEventListener('change', function() { uploadFile(fileInput.files[0]); });
-
-function uploadFile(file) {
-    if (!file) return;
-    var formData = new FormData();
-    formData.append('file', file);
-    document.getElementById('uploadProgress').style.display = 'block';
-    document.querySelector('#uploadProgress .progress-bar').style.width = '50%';
-    
-    fetch('{{ admin_url("/upload") }}', { method: 'POST', body: formData })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-        document.querySelector('#uploadProgress .progress-bar').style.width = '100%';
-        if (data.success) {
-            document.getElementById('uploadResult').innerHTML = '<div class="alert alert-success">Uploaded: <code>' + data.url + '</code></div>';
-            imageUrlInput.value = data.url;
-            previewImg.src = data.url;
-            imagePreview.style.display = 'block';
-            setTimeout(function() { uploadModal.hide(); }, 1500);
-        } else {
-            document.getElementById('uploadResult').innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
-        }
-    });
-}
 
 function openImagePicker() {
     new bootstrap.Modal(document.getElementById('imagePickerModal')).show();
@@ -850,10 +795,10 @@ function loadImageGallery() {
         var gallery = document.getElementById('imageGallery');
         if (data.images && data.images.length > 0) {
             gallery.innerHTML = data.images.map(function(img) {
-                return '<div class="col-4 col-md-3"><div class="card" style="cursor:pointer;background:#1e1e1e;border-color:#3c3c3c;" onclick="selectImage(\'' + img.url + '\')"><img src="' + img.url + '" class="card-img-top" style="height:80px;object-fit:cover;"></div></div>';
+                return '<div class="col-4 col-md-3"><div class="card" style="cursor:pointer;" onclick="selectImage(\'' + img.url + '\')"><img src="' + img.url + '" class="card-img-top" style="height:80px;object-fit:cover;"></div></div>';
             }).join('');
         } else {
-            gallery.innerHTML = '<div class="col-12 text-center py-4 text-muted">No images</div>';
+            gallery.innerHTML = '<div class="col-12 text-center py-4 text-muted">No images uploaded yet</div>';
         }
     });
 }
@@ -865,6 +810,67 @@ function selectImage(url) {
     bootstrap.Modal.getInstance(document.getElementById('imagePickerModal')).hide();
 }
 
+document.getElementById('uploadInput').addEventListener('change', function() {
+    var file = this.files[0];
+    if (!file) return;
+    var formData = new FormData();
+    formData.append('file', file);
+    fetch('{{ admin_url("/upload") }}', { method: 'POST', body: formData })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            loadImageGallery();
+            selectImage(data.url);
+        }
+    });
+});
+
+// Pane resizer
+var resizer = document.getElementById('paneResizer');
+var editorPane = document.querySelector('.editor-pane');
+var previewPane = document.querySelector('.preview-pane');
+var isResizing = false;
+
+resizer.addEventListener('mousedown', function(e) {
+    isResizing = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+});
+
+document.addEventListener('mousemove', function(e) {
+    if (!isResizing) return;
+    var main = document.getElementById('editorMain');
+    var rect = main.getBoundingClientRect();
+    var pct = ((e.clientX - rect.left) / rect.width) * 100;
+    if (pct > 20 && pct < 80) {
+        editorPane.style.flex = '0 0 ' + pct + '%';
+        previewPane.style.flex = '0 0 ' + (100 - pct) + '%';
+    }
+});
+
+document.addEventListener('mouseup', function() {
+    if (isResizing) {
+        isResizing = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        editor.refresh();
+    }
+});
+
+// Auto-generate slug from title
+document.getElementById('postTitle').addEventListener('blur', function() {
+    var slugInput = document.querySelector('input[name="slug"]');
+    if (!slugInput.readOnly && !slugInput.value) {
+        slugInput.value = this.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+});
+
+// Form submission
+document.getElementById('postForm').addEventListener('submit', function(e) {
+    document.getElementById('hiddenTitle').value = document.getElementById('postTitle').value;
+    document.getElementById('hiddenContent').value = editor.getValue();
+});
+
 // Paste image from clipboard
 editor.getWrapperElement().addEventListener('paste', function(e) {
     var items = e.clipboardData.items;
@@ -874,13 +880,11 @@ editor.getWrapperElement().addEventListener('paste', function(e) {
             var file = items[i].getAsFile();
             var formData = new FormData();
             formData.append('file', file);
-            document.getElementById('saveStatus').textContent = 'Uploading...';
             fetch('{{ admin_url("/upload") }}', { method: 'POST', body: formData })
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success) {
                     editor.replaceSelection('![image](' + data.url + ')');
-                    document.getElementById('saveStatus').textContent = 'Uploaded';
                 }
             });
             break;
@@ -888,7 +892,7 @@ editor.getWrapperElement().addEventListener('paste', function(e) {
     }
 });
 
-// Init
+// Initialize
 window.addEventListener('load', function() {
     updatePreview();
     updateStats();
