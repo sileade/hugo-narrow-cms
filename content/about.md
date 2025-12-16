@@ -1,36 +1,39 @@
 ---
-title: "About"
+title: "About Me"
+date: 2025-12-16
 layout: "about"
-summary: "Learn about Hugo Narrow theme and its technology stack"
-date: 2024-01-01T00:00:00+08:00
-links:
-  - name: "Hugo Docs"
-    url: "https://gohugo.io"
-    icon: "https://gohugo.io/favicon.ico"
-    description: "The world's fastest static site generator"
-  - name: "Tailwindcss"
-    url: "https://tailwindcss.com"
-    description: "CSS framework"
-  - name: "GitHub"
-    url: "https://github.com"
-    icon: "https://github.com/fluidicon.png"
-    description: "The world's largest code hosting platform. "
-  
-
+slug: "about"
+menu:
+  main:
+    weight: 60
+    params:
+      icon: about
 ---
 
-## About
+## Hello, I'm Ilea 👋
 
-Hugo Narrow is a modern, clean, and minimal Hugo theme built with Tailwind CSS 4.0. It's designed as a blog theme with extensive customization options including multiple color schemes, dark mode support, and responsive design.
+I'm an **Infrastructure Engineer** and **Tech Enthusiast** passionate about building reliable, scalable systems. My journey in technology started with curiosity about how things work under the hood, and it has evolved into a career focused on server infrastructure, networking, and system administration.
 
-## Technology Stack
+### What I Do
 
-- Hugo Extended
-- Tailwind CSS 4.0
-- @tailwindcss/typography
-- Glightbox
-- fjGallery
-- Macy.js
-- gumshoe
-- ...
+- 🖥️ **Server Infrastructure** - Designing and maintaining robust server environments
+- 🌐 **Networking** - Building secure and efficient network architectures  
+- 🐳 **Containerization** - Docker, Kubernetes, and modern deployment strategies
+- 🔧 **Automation** - Scripting and automating repetitive tasks
+- 📊 **Monitoring** - Implementing comprehensive monitoring solutions
 
+### My Philosophy
+
+> "Building reliable systems, one server at a time."
+
+I believe in the power of well-documented, maintainable infrastructure. Every cable, every configuration, every line of code should serve a purpose and be understandable to the next person who works on it.
+
+### Connect With Me
+
+Feel free to reach out through any of these channels:
+
+- 📧 **Email**: [ilea@nodkeys.com](mailto:ilea@nodkeys.com)
+- 💻 **GitHub**: [github.com/sileade](https://github.com/sileade)
+- 📱 **Telegram**: [t.me/nodkeys_i](https://t.me/nodkeys_i)
+
+I'm always open to discussing new projects, creative ideas, or opportunities to be part of your visions.

@@ -1,8 +1,8 @@
-baseURL: https://hugo-narrow.vercel.app/
+baseURL: "https://nodkeys.com"
 languageCode: en-US
 defaultContentLanguage: en
 defaultContentLanguageInSubdir: false
-title: Hugo Narrow
+title: Blog for Ilea
 theme: "hugo-narrow"
 
 
@@ -85,7 +85,7 @@ menus:
       params:
         icon: about
     - name: Contact
-      url: https://google.com
+      pageRef: /contact
       weight: 20
       params:
         icon: contact
@@ -98,22 +98,22 @@ menus:
   # footer social link
   social:
     - name: GitHub
-      url: https://github.com/username
+      url: https://github.com/sileade
       weight: 10
       params:
         icon: github
-    - name: Twitter
-      url: https://twitter.com/username
+    - name: Telegram
+      url: https://t.me/nodkeys_i
       weight: 20
       params:
-        icon: twitter
+        icon: telegram
     - name: LinkedIn
       url: https://linkedin.com/in/username
       weight: 30
       params:
         icon: linkedin
     - name: Email
-      url: mailto:your.email@example.com
+      url: mailto:ilea@nodkeys.com
       weight: 40
       params:
         icon: email
@@ -122,7 +122,7 @@ params:
   # Basic site info with SEO
   description: "A modern, clean, and minimal Hugo theme built with Tailwind CSS 4.0. Support custom themes, dark mode, and responsive design."
   keywords: ["Hugo", "Blog", "Theme", "Technology", "Programming"]
-  defaultAuthor: "Hugo Narrow"
+  defaultAuthor: "Ilea"
   language: "en-US"
   shortName: "Hugo Narrow"  # PWA
   images:
@@ -136,19 +136,19 @@ params:
 
 
   author:
-    name: "Hugo Narrow"
-    title: "A Clean and Minimal Hugo Theme"
-    description: "Focused on content and user experience."
-    avatar: "/images/avatar.svg"
+    name: "Ilea"
+    title: "Infrastructure Engineer & Tech Enthusiast"
+    description: "Building reliable systems, one server at a time."
+    avatar: "/images/avatar.jpg"
     social:
       - name: "GitHub"
-        url: "https://github.com/username"
+        url: "https://github.com/sileade"
         icon: "github"
-      - name: "Twitter"
-        url: "https://twitter.com/username"
-        icon: "twitter"
+      - name: "Telegram"
+        url: "https://t.me/nodkeys_i"
+        icon: "telegram"
       - name: "Email"
-        url: "mailto:hello@example.com"
+        url: "mailto:ilea@nodkeys.com"
         icon: "email"
 
   # UI Components Control
@@ -198,7 +198,7 @@ params:
       name: "Slate"
       order: 10
     twitter:
-      name: "Twitter"
+      name: "Telegram"
       order: 11
 
 
@@ -218,7 +218,7 @@ params:
   
     license:
       show: true
-      author: "Hugo Narrow"
+      author: "Ilea"
       name: "CC BY-NC-SA 4.0"
       description: "This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. Please attribute the source, use non-commercially, and maintain the same license."
       url: "https://creativecommons.org/licenses/by-nc-sa/4.0/"

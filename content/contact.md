@@ -1,22 +1,43 @@
 ---
 title: "Contact"
-date: 2025-12-15T00:00:00Z
-description: "Get in touch with us"
-email: "hello@example.com"
+date: 2025-12-16
+layout: "contact"
+slug: "contact"
+menu:
+  main:
+    weight: 70
+    params:
+      icon: contact
 ---
 
-# Get in Touch
+## Get In Touch 📬
 
-We'd love to hear from you! Feel free to reach out through any of the following channels:
+I'd love to hear from you! Whether you have a question, want to collaborate on a project, or just want to say hello, feel free to reach out.
 
-## Email
+### Contact Information
 
-Send us an email at [hello@example.com](mailto:hello@example.com)
+| Method | Details |
+|--------|---------|
+| 📧 **Email** | [ilea@nodkeys.com](mailto:ilea@nodkeys.com) |
+| 💻 **GitHub** | [github.com/sileade](https://github.com/sileade) |
+| 📱 **Telegram** | [t.me/nodkeys_i](https://t.me/nodkeys_i) |
 
-## Social Media
+### Preferred Contact Methods
 
-Follow us on social media for the latest updates and content.
+- **For quick questions**: Telegram is the fastest way to reach me
+- **For project inquiries**: Email works best for detailed discussions
+- **For code-related topics**: Open an issue or PR on GitHub
 
-## Contact Form
+### Response Time
 
-*Coming soon - we're working on adding a contact form!*
+I typically respond within **24-48 hours**. For urgent matters, Telegram is your best bet.
+
+### What I Can Help With
+
+- 🖥️ Server infrastructure consulting
+- 🐳 Docker and containerization guidance
+- 🌐 Network architecture advice
+- 🔧 System administration questions
+- 💡 General tech discussions
+
+Looking forward to connecting with you!

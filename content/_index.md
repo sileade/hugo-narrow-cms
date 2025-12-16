@@ -1,18 +1,18 @@
 ---
 title: "Home"
 author:
-  name: "Hugo Narrow"
-  title: "A Clean and Minimal Hugo Theme"
-  description: "Focused on content and user experience."
-  avatar: "/images/avatar.svg"
+  name: "Ilea"
+  title: "Infrastructure Engineer & Tech Enthusiast"
+  description: "Building reliable systems, one server at a time."
+  avatar: "/images/avatar.jpg"
   social:
     - name: "GitHub"
-      url: "https://github.com/tom2almighty/hugo-narrow"
+      url: "https://github.com/sileade"
       icon: "github"
-    - name: "Twitter"
-      url: "https://twitter.com/username"
-      icon: "twitter"
+    - name: "Telegram"
+      url: "https://t.me/nodkeys_i"
+      icon: "telegram"
     - name: "Email"
-      url: "mailto:hello@example.com"
+      url: "mailto:ilea@nodkeys.com"
       icon: "email"
 ---
