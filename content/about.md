@@ -1,5 +1,5 @@
 ---
-title: "About Me"
+title: "Обо мне"
 date: 2025-12-16
 layout: "about"
 slug: "about"
@@ -10,30 +10,43 @@ menu:
       icon: about
 ---
 
-## Hello, I'm Ilea 👋
+## Привет, я Ilea 👋
 
-I'm an **Infrastructure Engineer** and **Tech Enthusiast** passionate about building reliable, scalable systems. My journey in technology started with curiosity about how things work under the hood, and it has evolved into a career focused on server infrastructure, networking, and system administration.
+Я **инженер инфраструктуры** и просто человек, которому нравится разбираться в том, как всё устроено. Начинал с любопытства — почему сервер работает, как пакеты ходят по сети, зачем нужен этот конфиг. Теперь это моя работа и хобби одновременно.
 
-### What I Do
+### Чем занимаюсь
 
-- 🖥️ **Server Infrastructure** - Designing and maintaining robust server environments
-- 🌐 **Networking** - Building secure and efficient network architectures  
-- 🐳 **Containerization** - Docker, Kubernetes, and modern deployment strategies
-- 🔧 **Automation** - Scripting and automating repetitive tasks
-- 📊 **Monitoring** - Implementing comprehensive monitoring solutions
+Большую часть времени провожу с серверами, сетями и автоматизацией. Люблю, когда система работает стабильно и предсказуемо. Ненавижу, когда что-то падает в 3 часа ночи (но такое бывает).
 
-### My Philosophy
+**Мой стек:**
+- Серверная инфраструктура — от железа до виртуализации
+- Сети — маршрутизация, файрволы, VPN
+- Контейнеры — Docker, иногда Kubernetes
+- Автоматизация — Ansible, скрипты, всё что экономит время
+- Мониторинг — потому что лучше узнать о проблеме раньше, чем пользователи
 
-> "Building reliable systems, one server at a time."
+### Про этот блог
 
-I believe in the power of well-documented, maintainable infrastructure. Every cable, every configuration, every line of code should serve a purpose and be understandable to the next person who works on it.
+Этот блог — моя попытка делиться тем, что мне интересно. Здесь будут:
 
-### Connect With Me
+- **Обзоры вещей** — я фанат EDC и функциональных гаджетов
+- **Технические заметки** — то, что узнал и хочу не забыть
+- **Размышления** — о технологиях, работе и жизни в целом
 
-Feel free to reach out through any of these channels:
+Не претендую на экспертность во всём. Просто делюсь опытом и мнением.
+
+### Моя философия
+
+> Не так важно, брендовая вещь или нет — главное, чтобы она служила и была функциональна.
+
+Это касается и вещей, и инфраструктуры, и кода. Простота и надёжность важнее красоты и сложности.
+
+### Связаться со мной
+
+Если хотите что-то обсудить, предложить или просто поздороваться:
 
 - 📧 **Email**: [ilea@nodkeys.com](mailto:ilea@nodkeys.com)
 - 💻 **GitHub**: [github.com/sileade](https://github.com/sileade)
 - 📱 **Telegram**: [t.me/nodkeys_i](https://t.me/nodkeys_i)
 
-I'm always open to discussing new projects, creative ideas, or opportunities to be part of your visions.
+Всегда рад интересным проектам и новым знакомствам.
