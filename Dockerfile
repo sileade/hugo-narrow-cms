@@ -1,7 +1,7 @@
 # Multi-stage Dockerfile for Hugo Narrow CMS
 
 # Stage 1: Builder
-FROM klakegg/hugo:0.146.0-ext-alpine AS builder
+FROM hugomods/hugo:exts AS builder
 
 # Set working directory
 WORKDIR /src
@@ -13,7 +13,7 @@ COPY . .
 RUN hugo --minify
 
 # Stage 2: Development
-FROM klakegg/hugo:0.146.0-ext-alpine AS development
+FROM hugomods/hugo:exts AS development
 
 # Set working directory
 WORKDIR /src
