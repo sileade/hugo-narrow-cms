@@ -1,14 +1,10 @@
 {{ define "main" }}
-  <!-- 面包屑导航 -->
-  {{ partial "navigation/breadcrumb.html" . }}
-
-
-  <!-- 文章封面 -->
-  {{- if .Params.cover -}}
-    {{/* 使用通用图片处理器 */}}
+  {{/* Vas3k-style hero cover */}}
+  {{ $coverSrc := .Params.cover | default .Params.image }}
+  {{ if $coverSrc }}
     {{- partial "content/image-processor.html" (dict
       "context" .
-      "src" .Params.cover
+      "src" $coverSrc
       "alt" .Title
       "enableModal" false
       "enableResponsive" true
@@ -16,58 +12,74 @@
       "outputType" "data"
     ) -}}
     {{- $coverImage := .Scratch.Get "imageUrl" -}}
-    {{- $imageResource := .Scratch.Get "imageResource" -}}
-    {{- $placeholderData := .Scratch.Get "placeholderData" | default dict -}}
-    {{- $gradients := $placeholderData.gradients | default (slice "from-blue-500/20 to-purple-500/10") -}}
-    {{- $colorIndex := $placeholderData.colorIndex | default 0 -}}
-
-    {{- if $coverImage -}}
-      <div class="mb-8 overflow-hidden rounded-2xl">
-        <img
-          src="{{ $coverImage }}"
-          alt="{{ .Title }}"
-          class="h-64 w-full object-cover md:h-80"
-          loading="eager"
-          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-        <!-- 图片加载失败时的占位图 -->
-        <div class="{{ index $gradients $colorIndex }} relative h-64 md:h-80 w-full bg-gradient-to-br" style="display: none;">
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="flex h-24 w-24 items-center justify-center rounded-full border border-white/30 bg-white/20 backdrop-blur-sm">
-              <span class="text-3xl font-bold text-white">{{ substr .Title 0 1 | upper }}</span>
-            </div>
+    {{ if $coverImage }}
+      <div class="vas3k-hero relative w-full overflow-hidden rounded-[20px] mb-8 shadow-lg" style="margin-top: -1rem;">
+        <div class="vas3k-hero-bg absolute inset-0 bg-cover bg-center" style="background-image: url('{{ $coverImage }}');"></div>
+        <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.50) 50%, rgba(0,0,0,0.25) 100%);"></div>
+        <div class="relative z-10 flex flex-col justify-end min-h-[300px] md:min-h-[450px] lg:min-h-[500px] p-6 md:p-10 lg:p-14">
+          {{/* Date, reading time, word count */}}
+          <div class="flex flex-wrap items-center gap-3 mb-4 text-sm" style="color: rgba(255,255,255,0.90);">
+            <time datetime="{{ .Date.Format "2006-01-02" }}" class="font-medium">
+              {{ .Date.Format "January 2, 2006" }}
+            </time>
+            {{ if .ReadingTime }}
+              <span class="opacity-50">·</span>
+              <span>{{ .ReadingTime }} min read</span>
+            {{ end }}
+            {{ if .WordCount }}
+              <span class="opacity-50">·</span>
+              <span>{{ .WordCount }} words</span>
+            {{ end }}
           </div>
-          <!-- 装饰元素 -->
-          <div class="absolute top-8 right-8 h-20 w-20 rounded-full bg-white/15"></div>
-          <div class="absolute bottom-8 left-8 h-16 w-16 rounded-full bg-white/20"></div>
+          {{/* Title */}}
+          <h1 class="mb-3">
+            <span class="inline px-3 py-1.5 text-3xl md:text-4xl lg:text-5xl font-bold leading-tight" style="background-color: rgba(0,0,0,0.85); color: #ffffff; box-decoration-break: clone; -webkit-box-decoration-break: clone; border-radius: 4px; text-shadow: 0 2px 8px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.4);">
+              {{ .Title }}
+            </span>
+          </h1>
+          {{/* Description / subtitle */}}
+          {{ if .Params.description }}
+            <div class="mt-1">
+              <span class="inline px-2 py-1 text-base md:text-lg font-normal leading-relaxed" style="background-color: rgba(0,0,0,0.70); color: rgba(255,255,255,0.92); box-decoration-break: clone; -webkit-box-decoration-break: clone; border-radius: 3px; text-shadow: 0 1px 4px rgba(0,0,0,0.5);">
+                {{ .Params.description }}
+              </span>
+            </div>
+          {{ end }}
+          {{/* Tags */}}
+          {{ if .Params.tags }}
+            <div class="flex flex-wrap gap-2 mt-4">
+              {{ range .Params.tags }}
+                <a href="{{ "tags/" | absLangURL }}{{ . | urlize }}/" class="bg-white/20 backdrop-blur-sm text-white text-sm font-medium px-3 py-1.5 rounded-full border border-white/25 hover:bg-white/30 transition-all duration-200 no-underline">
+                  {{ . }}
+                </a>
+              {{ end }}
+            </div>
+          {{ end }}
         </div>
       </div>
-    {{- end -}}
+    {{ end }}
+  {{ else }}
+    {{/* No cover image — simple header */}}
+    {{ partial "navigation/breadcrumb.html" . }}
+    <header class="mb-8">
+      {{ partial "content/post-meta.html" . }}
+    </header>
   {{ end }}
 
-
-  <!-- 文章头部信息 -->
-  <header class="mb-8">
-    {{ partial "content/post-meta.html" . }}
-  </header>
-
-  <!-- 文章内容 -->
-  <article class="prose prose-neutral dark:prose-invert mb-12 max-w-none">
+  {{/* Post content */}}
+  <article class="vas3k-post prose prose-neutral dark:prose-invert mb-12 max-w-none prose-img:rounded-[20px] prose-img:shadow-md prose-headings:scroll-mt-20 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:italic prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400">
     {{ .Content }}
   </article>
 
-  <!-- 许可证信息 -->
+  {{/* License */}}
   {{ partial "content/post-license.html" . }}
 
-
-  <!-- 上一篇/下一篇导航 -->
+  {{/* Navigation */}}
   {{ partial "content/post-navigation.html" . }}
 
-
-  <!-- 相关文章 -->
+  {{/* Related posts */}}
   {{ partial "content/related-posts.html" . }}
 
-
-  <!-- 评论组件 -->
+  {{/* Comments */}}
   {{ partial "features/comments.html" . }}
-
 {{ end }}

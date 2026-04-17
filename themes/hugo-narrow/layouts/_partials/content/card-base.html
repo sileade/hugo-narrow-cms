@@ -1,10 +1,8 @@
-{{/* 文章卡片基础组件 - 用于主文章列表显示
-  @context {page} .page 文章页面对象
+{{/* Карточка поста в стиле vas3k.blog
+  @context {page} .page Страница поста
 */}}
-
 {{ $page := .page }}
-
-{{/* 使用通用图片处理器 */}}
+{{/* Обработка обложки */}}
 {{- if $page.Params.cover -}}
   {{- partial "content/image-processor.html" (dict
     "context" $page
@@ -12,8 +10,14 @@
     "enablePlaceholder" true
     "outputType" "data"
   ) -}}
+{{- else if $page.Params.image -}}
+  {{- partial "content/image-processor.html" (dict
+    "context" $page
+    "src" $page.Params.image
+    "enablePlaceholder" true
+    "outputType" "data"
+  ) -}}
 {{- else -}}
-  {{/* 没有封面图时，仍需要生成占位图数据 */}}
   {{- partial "content/image-processor.html" (dict
     "context" $page
     "src" ""
@@ -21,15 +25,12 @@
     "outputType" "data"
   ) -}}
 {{- end -}}
-
 {{- $coverImage := $page.Scratch.Get "imageUrl" -}}
 {{- $placeholderData := $page.Scratch.Get "placeholderData" | default dict -}}
 {{- $randomImage := $placeholderData.randomImage | default "" -}}
 {{- $useRandomImage := $placeholderData.useRandomImage | default false -}}
 {{- $gradients := $placeholderData.gradients | default (slice "from-blue-500/20 to-purple-500/10") -}}
 {{- $colorIndex := $placeholderData.colorIndex | default 0 -}}
-
-
 {{- $summaryContent := "" -}}
 {{- if $page.Params.summary -}}
   {{- $summaryContent = $page.Params.summary -}}
@@ -38,68 +39,56 @@
 {{- else if $page.Summary -}}
   {{- $summaryContent = $page.Summary | plainify | truncate 140 -}}
 {{- end -}}
-
-{{/* 文章卡片 */}}
-<article class="group">
-  <a href="{{ $page.RelPermalink }}" class="block">
-    <div class="bg-card border-border hover:bg-primary/5 hover:border-primary/20 focus:ring-primary/20 relative flex flex-col overflow-hidden rounded-xl border transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg focus:ring-2 focus:outline-none">
-      <!-- 移动端顶部封面 -->
-      <div class="block md:hidden">
-        {{ partial "content/card-image.html" (dict "page" $page "type" "mobile" "coverImage" $coverImage "randomImage" $randomImage "useRandomImage" $useRandomImage "gradients" $gradients "colorIndex" $colorIndex) }}
-      </div>
-
-      <!-- 桌面端右侧封面 -->
-      <div class="absolute top-0 right-0 hidden h-full w-80 transition-opacity duration-300 group-hover:opacity-90 md:block">
-        {{ partial "content/card-image.html" (dict "page" $page "type" "desktop" "coverImage" $coverImage "randomImage" $randomImage "useRandomImage" $useRandomImage "gradients" $gradients "colorIndex" $colorIndex) }}
-      </div>
-
-      <!-- 桌面端悬浮时的填充颜色遮罩 -->
-      <div class="absolute top-0 right-0 hidden h-full w-80 opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:block bg-gradient-to-l from-primary/5"></div>
-
-      <!-- 文章内容区域 -->
-      <div class="relative z-10 flex flex-1 flex-col p-6 md:pr-[21rem]">
-        <!-- 文章标题 -->
-        <h3 class="text-foreground group-hover:text-primary mb-4 text-lg font-semibold leading-tight transition-colors duration-200">
-          {{ $page.Title }}
-        </h3>
-
-        <!-- 文章摘要 -->
-        {{ if $summaryContent }}
-          <p class="text-muted-foreground mb-4 text-sm leading-relaxed">
-            {{ $summaryContent }}
-          </p>
+{{/* Vas3k-style post card — with clear separation */}}
+<article class="vas3k-card group">
+  <a href="{{ $page.RelPermalink }}" class="vas3k-card-link block relative overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
+    {{ if $coverImage }}
+      style="background-image: url('{{ $coverImage }}');"
+    {{ else if and $useRandomImage $randomImage }}
+      style="background-image: url('{{ $randomImage }}');"
+    {{ end }}>
+    {{/* Dark overlay for text readability — stronger gradient */}}
+    <div class="absolute inset-0 z-10" style="background: linear-gradient(to top, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.30) 100%);"></div>
+    {{/* Fallback gradient if no image */}}
+    {{ if and (not $coverImage) (not (and $useRandomImage $randomImage)) }}
+      <div class="absolute inset-0 bg-gradient-to-br {{ index $gradients $colorIndex }}"></div>
+    {{ end }}
+    {{/* Card content - title and subtitle at bottom */}}
+    <div class="relative z-20 flex flex-col justify-end p-6 md:p-8 min-h-[300px] md:min-h-[400px]">
+      {{/* Date and reading time */}}
+      <div class="flex items-center gap-3 mb-3 text-white/80 text-sm font-medium">
+        <time datetime="{{ $page.Date.Format "2006-01-02" }}">
+          {{ $page.Date.Format "January 2, 2006" }}
+        </time>
+        {{ if $page.ReadingTime }}
+          <span class="text-white/50">·</span>
+          <span>{{ $page.ReadingTime }} min read</span>
         {{ end }}
-
-        <!-- 元信息 -->
-        <div class="mt-auto text-sm text-muted-foreground">
-          <!-- 时间信息行 -->
-          <div class="flex items-center gap-3">
-            <div class="flex items-center gap-1.5">
-              {{ partial "features/icon.html" (dict "name" "calendar" "size" "sm" "ariaLabel" (i18n "post.published_on")) }}
-              <time datetime="{{ $page.Date.Format "2006-01-02" }}" class="font-medium">
-                {{ $page.Date.Format (i18n "time.date_format" | default "2006年01月02日") }}
-              </time>
-            </div>
-            {{ if $page.ReadingTime }}
-              <div class="flex items-center gap-1.5">
-                {{ partial "features/icon.html" (dict "name" "clock" "size" "sm" "ariaLabel" (i18n "post.reading_time")) }}
-                <span class="font-medium">{{ $page.ReadingTime }} {{ i18n "time.minute" | default "min" }}</span>
-              </div>
-            {{ end }}
-          </div>
-
-          <!-- 标签行 -->
-          {{ if isset $page.Params "tags" }}
-            <div class="flex flex-wrap items-center gap-1.5 mt-2">
-              {{ range $tag := $page.Params.tags }}
-                <span class="bg-muted/50 border-muted/30 flex items-center gap-1 rounded-md border px-2 py-1">
-                  <span class="font-medium">{{ $tag }}</span>
-                </span>
-              {{ end }}
-            </div>
+      </div>
+      {{/* Title — highlighted with solid background like vas3k */}}
+      <h3 class="vas3k-card-title mb-2">
+        <span class="vas3k-highlight-title">
+          {{ $page.Title }}
+        </span>
+      </h3>
+      {{/* Subtitle / Description — highlighted */}}
+      {{ if $summaryContent }}
+        <p class="vas3k-card-desc mb-3">
+          <span class="vas3k-highlight-desc">
+            {{ $summaryContent }}
+          </span>
+        </p>
+      {{ end }}
+      {{/* Tags */}}
+      {{ if isset $page.Params "tags" }}
+        <div class="flex flex-wrap gap-2 mt-1">
+          {{ range first 4 $page.Params.tags }}
+            <span class="vas3k-tag">
+              {{ . }}
+            </span>
           {{ end }}
         </div>
-      </div>
+      {{ end }}
     </div>
   </a>
 </article>
