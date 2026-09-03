@@ -1,3 +1,12 @@
+<!-- NODKEYS-WORKSPACE:START -->
+
+> **Рабочая область:** [Nodkeys](https://kaneo.nodkeys.com/dashboard/workspace/V8Dav0qBh442HPTzDdZOXaYolL9pYcdH)  
+> **Проект Kaneo:** [Hugo Narrow CMS](https://kaneo.nodkeys.com/project/pynnh188sldrq3rctdxwezps)  
+> **Классификационная ветка:** `Nodkeys`  
+> **Связанные репозитории:** [hugo-narrow-cms](https://git.nodkeys.com/ilea/hugo-narrow-cms/src/branch/Nodkeys)
+
+<!-- NODKEYS-WORKSPACE:END -->
+
 # 🎨 Hugo Narrow CMS
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sileade/hugo-narrow-cms)
@@ -523,7 +532,7 @@ hugo new docs/getting-started.md
 **Kaneo ID:** `pynnh188sldrq3rctdxwezps`  
 **Slug:** `HUGO`  
 **Текущий repository:** `hugo-narrow-cms`  
-**Документационная ветка:** `kaneo-processes`  
+**Документационная ветка:** `Nodkeys`  
 **Количество этапов:** 8  
 **Статус задач:** `To Do`
 
@@ -561,7 +570,7 @@ Hugo Narrow CMS — это современный статический сай�
 
 ### Репозитории проекта
 
-- **hugo-narrow-cms**: [Forgejo](https://git.nodkeys.com/ilea/hugo-narrow-cms) · [GitHub](https://github.com/sileade/hugo-narrow-cms) · [Process branch](https://git.nodkeys.com/ilea/hugo-narrow-cms/src/branch/kaneo-processes/README.md)
+- **hugo-narrow-cms**: [Forgejo](https://git.nodkeys.com/ilea/hugo-narrow-cms) · [GitHub](https://github.com/sileade/hugo-narrow-cms) · [Process branch](https://git.nodkeys.com/ilea/hugo-narrow-cms/src/branch/Nodkeys/README.md)
 
 ### Компоненты
 
